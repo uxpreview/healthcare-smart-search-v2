@@ -978,88 +978,224 @@ const COLONOSCOPY = {
 /* ============================================================ */
 /* === PT_COVERAGE: insurance answer ========================== */
 /* ============================================================ */
+
+function PTBenefitSteps() {
+  return (
+    <div className="benefit-steps">
+      <div className="benefit-step">
+        <div className="benefit-step__body">
+          <div className="benefit-step__title">Choose an in-network PT provider</div>
+          <div className="benefit-step__copy">You have 28 in-network physical therapy providers within 5 miles of 10001.<sup><a href="#src-1" className="cite">1</a></sup></div>
+        </div>
+        <div className="benefit-step__cta">
+          <button className="btn btn--primary">View providers</button>
+        </div>
+      </div>
+      <div className="benefit-step">
+        <div className="benefit-step__body">
+          <div className="benefit-step__title">Book your first visit</div>
+          <div className="benefit-step__copy">No referral is required under your PPO plan.<sup><a href="#src-2" className="cite">2</a></sup> Most PT clinics will complete an evaluation visit before building a treatment plan.</div>
+        </div>
+        <div className="benefit-step__cta">
+          <button className="btn">Find a location</button>
+        </div>
+      </div>
+      <div className="benefit-step">
+        <div className="benefit-step__body">
+          <div className="benefit-step__title">Track your visit count</div>
+          <div className="benefit-step__copy">Your plan covers up to 30 in-network PT visits per calendar year. Additional visits may require preauthorization.<sup><a href="#src-1" className="cite">1</a></sup></div>
+        </div>
+        <div className="benefit-step__cta">
+          <button className="btn">View plan details</button>
+        </div>
+      </div>
+      <div className="benefit-step__note">Coverage can vary by diagnosis, provider network status, and medical necessity. Confirm benefits with your plan before your visit.</div>
+    </div>
+  );
+}
+
+function PTProviders() {
+  const providers = [
+    { name: '[System] Midtown Physical Therapy',  dist: '0.7 mi', specialties: 'Orthopedic rehab, sports injuries, back and neck pain', note: 'Evening appointments', phone: '(212) 555-0181', virtual: false, primaryCta: 'Book evaluation' },
+    { name: '[System] West Side Rehabilitation',  dist: '1.3 mi', specialties: 'Post-surgical rehab, balance therapy, chronic pain',    note: 'Accepting new patients',  phone: '(212) 555-0148', virtual: false, primaryCta: 'Book evaluation' },
+    { name: '[System] Chelsea Sports Therapy',    dist: '1.8 mi', specialties: 'Sports injuries, running injuries, shoulder and knee rehab', note: 'Next available this week', phone: '(212) 555-0162', virtual: false, primaryCta: 'Book evaluation' },
+    { name: '[System] Virtual PT Coaching',       dist: null,     specialties: 'Home exercise programs, recovery check-ins',           note: 'Good for follow-up care',  phone: '(212) 555-0117', virtual: true,  primaryCta: 'Schedule virtual visit' },
+  ];
+  return (
+    <>
+      <p style={{fontSize: 13, color: 'var(--text-muted)', marginBottom: 14}}>Showing providers within 5 miles who accept [Plan] PPO.<sup><a href="#src-1" className="cite">1</a></sup></p>
+      <div className="proc-locs">
+        {providers.map((p, i) => (
+          <div className="proc-loc" key={i}>
+            <div className="proc-loc__main">
+              <div className="proc-loc__name">
+                {p.name}
+                <span className="pill pill--ok"><span className="pill__dot"></span><span>In-network</span></span>
+              </div>
+              <div className="proc-loc__meta">
+                {p.virtual
+                  ? <div className="meta-row">{Icon.Video()}<span>Video visits available</span></div>
+                  : <div className="meta-row">{Icon.MapPin()}<span>{p.dist}</span></div>
+                }
+                <div className="meta-row">{Icon.BookOpen()}<span>{p.specialties}</span></div>
+                <div className="meta-row">{Icon.Info()}<span>{p.note}</span></div>
+                <div className="meta-row">{Icon.Phone()}<span>{p.phone}</span></div>
+              </div>
+            </div>
+            <div className="proc-loc__actions">
+              <button className="btn btn--primary">{p.primaryCta}</button>
+              <button className="btn">View details</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function PTLocs() {
+  const locs = [
+    { name: '[System] Midtown Rehabilitation Center', dist: '0.7 mi', address: '245 W 38th St', hours: 'Open today until 7:00 PM', services: 'PT, occupational therapy, sports rehab', phone: '(212) 555-0181' },
+    { name: '[System] West Side Rehab Clinic',        dist: '1.3 mi', address: '410 W 57th St', hours: 'Open today until 6:00 PM', services: 'PT, post-surgical rehab, balance therapy', phone: '(212) 555-0148' },
+    { name: '[System] Chelsea Sports Rehab',          dist: '1.8 mi', address: '90 8th Ave',    hours: 'Open today until 8:00 PM', services: 'PT, sports rehab, injury prevention',     phone: '(212) 555-0162' },
+  ];
+  return (
+    <div className="proc-locs">
+      {locs.map((loc, i) => (
+        <div className="proc-loc" key={i}>
+          <div className="proc-loc__main">
+            <div className="proc-loc__name">{loc.name}</div>
+            <div className="proc-loc__meta">
+              <div className="meta-row">{Icon.MapPin()}<span>{loc.dist} · {loc.address}</span></div>
+              <div className="meta-row">{Icon.Clock()}<span>{loc.hours}</span></div>
+              <div className="meta-row">{Icon.BookOpen()}<span>{loc.services}</span></div>
+              <div className="meta-row">{Icon.Phone()}<span>{loc.phone}</span></div>
+            </div>
+          </div>
+          <div className="proc-loc__actions">
+            <button className="btn btn--primary">Get directions</button>
+            <button className="btn">View providers</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const PT_COVERAGE = {
   query: "Does my plan cover physical therapy?",
-  chatLabel: "PT coverage",
+  chatLabel: "Does my plan cover physical therapy?",
   tabs: [
-    { id: 'pages', label: 'Pages', icon: 'FileText', count: 4 },
-    { id: 'doctors', label: 'Doctors', icon: 'Stethoscope', count: 7 },
-    { id: 'services', label: 'Services', icon: 'Video', count: 5 },
-    { id: 'locations', label: 'Locations', icon: 'MapPin', count: 3 },
+    { id: 'coverage',  label: 'Coverage',  icon: 'Shield',      confidence: 'high' },
+    { id: 'providers', label: 'Providers', icon: 'Stethoscope', count: 7, confidence: 'high' },
+    { id: 'locations', label: 'Locations', icon: 'MapPin',      count: 3, confidence: 'high' },
+    { id: 'pages',     label: 'Pages',     icon: 'FileText',    count: 5, confidence: 'high' },
   ],
   summary: [
-    { text: "Yes — your plan covers physical therapy at in-network providers with a " },
-    { text: "$40 copay per visit", cite: [1] },
-    { text: " after your annual deductible is met. You're allowed up to 30 visits per calendar year without preauthorization. " },
-    { text: "A referral from your primary care doctor is not required", cite: [2] },
+    { text: "Yes — your plan covers physical therapy with in-network providers. Your copay is " },
+    { text: "$40 per visit", cite: [1] },
+    { text: " after your annual deductible is met. You have up to " },
+    { text: "30 visits per calendar year", cite: [1] },
+    { text: " without preauthorization, and " },
+    { text: "a referral from your primary care doctor is not required", cite: [2] },
     { text: " under your PPO plan." },
   ],
   sections: [
     {
       id: 'coverage',
-      tab: 'pages',
+      tab: 'coverage',
       title: 'Coverage at a glance',
       body: () => (
-        <window.CoverageCard
-          plan="[Plan] PPO — Family"
-          status="covered"
-          copay={40}
-          deductible={{met: '$320', total: '500'}}
-          visitsPerYear={30}
-          referralRequired={false}
-          network={28}
-        />
-      ),
-    },
-    {
-      id: 'in-network',
-      tab: 'doctors',
-      title: 'In-network physical therapists',
-      body: () => (
         <>
-          <p>28 physical therapists are in-network with your plan within 5 miles. Showing top-rated.</p>
-          <window.CarouselSpecialties />
+          <window.CoverageCard
+            plan="[Plan] PPO — Family"
+            status="covered"
+            copay={40}
+            deductible={{met: '$320', total: '500'}}
+            visitsPerYear={30}
+            referralRequired={false}
+            network={28}
+            preauth="Not required for first 30 visits"
+          />
         </>
       ),
     },
     {
       id: 'how-to-use',
-      tab: 'pages',
+      tab: 'coverage',
       title: 'How to use this benefit',
+      body: () => <PTBenefitSteps />,
+    },
+    {
+      id: 'providers',
+      tab: 'providers',
+      title: 'In-network physical therapy providers',
+      body: () => <PTProviders />,
+    },
+    {
+      id: 'pt-locations',
+      tab: 'locations',
+      title: 'Physical therapy locations near you',
+      body: () => <PTLocs />,
+    },
+    {
+      id: 'pages-results',
+      tab: 'pages',
+      title: 'Related pages',
       body: () => (
-        <ol className="bullet-list">
-          <li>
-            <div className="bullet-list__label">Choose an in-network PT</div>
-            <div className="bullet-list__desc">All providers shown above are confirmed in-network. Out-of-network can cost $150+ per visit instead of $40.</div>
-          </li>
-          <li>
-            <div className="bullet-list__label">Book your first visit</div>
-            <div className="bullet-list__desc">No referral needed under your PPO. Most PTs will do an evaluation visit first to build a treatment plan.</div>
-          </li>
-          <li>
-            <div className="bullet-list__label">Track your visit count</div>
-            <div className="bullet-list__desc">You have 30 visits per calendar year — your PT's office will track this with you. Beyond 30, additional visits require preauth.</div>
-          </li>
-          <li>
-            <div className="bullet-list__label">Pay your copay</div>
-            <div className="bullet-list__desc">$40 at each visit after your deductible is met. You're $180 from your deductible — your first 2-3 visits will cost full price until then.</div>
-          </li>
-        </ol>
+        <window.PageResults items={[
+          {
+            kind: 'Service',
+            url: '/services/physical-therapy',
+            title: 'Physical therapy',
+            snippet: 'Learn about physical therapy services for injury recovery, pain management, mobility, strength, and post-surgical rehabilitation.',
+            meta: ['Service line', 'Patient services'],
+          },
+          {
+            kind: 'Service line',
+            url: '/services/rehabilitation',
+            title: 'Rehabilitation services',
+            snippet: 'Explore rehabilitation care, including physical therapy, occupational therapy, speech therapy, sports rehab, and recovery programs.',
+            meta: ['Service line', 'Patient services'],
+          },
+          {
+            kind: 'Billing and insurance',
+            url: '/billing/insurance-accepted',
+            title: 'Insurance accepted',
+            snippet: 'Review accepted insurance plans and learn how to confirm your coverage before a visit.',
+            meta: ['Updated May 2026', 'Plans accepted'],
+          },
+          {
+            kind: 'Billing and insurance',
+            url: '/billing/patient-estimates',
+            title: 'Patient billing and estimates',
+            snippet: 'Learn how deductibles, copays, estimates, and out-of-pocket costs work for outpatient care.',
+            meta: ['Clinician-reviewed', 'Billing support'],
+          },
+          {
+            kind: 'Patient guidance',
+            url: '/learn/referrals',
+            title: 'Do I need a referral?',
+            snippet: 'Find out when referrals are required for specialty care, therapy services, and insurance coverage.',
+            meta: ['Clinician-reviewed', '3 min read'],
+          },
+        ]} />
       ),
     },
   ],
   sources: [
-    { num: 1, fav: 'P', name: '[Plan]', title: 'PPO Family plan — benefits summary', date: 'Jan 2026', url: '#' },
-    { num: 2, fav: 'P', name: '[Plan]', title: 'Referral requirements by service', date: 'Feb 2026', url: '#' },
-    { num: 3, fav: 'S', name: '[System] Billing', title: 'Understanding deductibles & copays', date: 'Mar 2026', url: '#' },
+    { num: 1, fav: 'P', name: '[Plan]',           title: 'PPO Family plan — benefits summary',            date: 'Jan 2026', url: '#' },
+    { num: 2, fav: 'P', name: '[Plan]',           title: 'Referral requirements by service',              date: 'Feb 2026', url: '#' },
+    { num: 3, fav: 'S', name: '[System] Billing', title: 'Understanding deductibles and copays',          date: 'Mar 2026', url: '#' },
+    { num: 4, fav: 'S', name: '[System] Locations', title: 'Physical therapy location directory',         date: 'Updated May 2026', url: '#' },
   ],
   followups: [
     "What about chiropractic care?",
-    "Is acupuncture covered?",
     "How do I check my deductible balance?",
-    "Find PTs who accept evening appointments",
+    "Find PTs with evening appointments",
   ],
 };
+
 
 /* ============================================================ */
 /* === CHEST_PAIN: placeholder for the emergency flow ========= */

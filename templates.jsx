@@ -29,7 +29,7 @@ function TimelineStepper({ steps }) {
 }
 
 /* === Coverage card (insurance) === */
-function CoverageCard({ plan, status, copay, deductible, visitsPerYear, referralRequired, network }) {
+function CoverageCard({ plan, status, copay, deductible, visitsPerYear, referralRequired, network, preauth }) {
   return (
     <div className="coverage">
       <div className="coverage__head">
@@ -63,6 +63,12 @@ function CoverageCard({ plan, status, copay, deductible, visitsPerYear, referral
           <div className="coverage__stat-value">{referralRequired ? 'Yes' : 'No'}</div>
           <div className="coverage__stat-sub">{referralRequired ? 'from your PCP' : 'self-refer'}</div>
         </div>
+        {preauth && (
+          <div className="coverage__stat">
+            <div className="coverage__stat-label">Preauthorization</div>
+            <div className="coverage__stat-value" style={{fontSize: 14, paddingTop: 4}}>{preauth}</div>
+          </div>
+        )}
       </div>
       <div className="coverage__network">
         <span className="pill pill--ok">{TIcon.Check()}<span>In-network</span></span>

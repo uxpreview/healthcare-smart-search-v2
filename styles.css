@@ -2207,7 +2207,7 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
 }
 .coverage__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   border-bottom: 1px solid var(--border);
 }
 .coverage__stat {
@@ -3268,6 +3268,10 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
 }
 .proc-loc__main { flex: 1; min-width: 0; }
 .proc-loc__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
@@ -3286,3 +3290,43 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   .proc-loc__actions { flex-direction: row; }
 }
 .cite-pop__open svg { width: 11px; height: 11px; }
+
+/* === Benefit steps (PT coverage — How to use) === */
+.coverage-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.benefit-steps {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.benefit-step {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.benefit-step:last-of-type { border-bottom: 0; }
+.benefit-step__body { flex: 1; min-width: 0; }
+.benefit-step__title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.benefit-step__copy { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.benefit-step__cta { flex-shrink: 0; align-self: center; }
+.benefit-step__note {
+  font-size: 12px;
+  color: var(--text-faint);
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-alt);
+  line-height: 1.5;
+}
+@media (max-width: 560px) {
+  .benefit-step { flex-direction: column; gap: 10px; }
+  .benefit-step__cta { align-self: flex-start; }
+}
