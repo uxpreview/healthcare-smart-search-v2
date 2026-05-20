@@ -666,7 +666,7 @@ const URGENT_CARE = {
 function ColonoscopyInstructions() {
   return (
     <div className="instr-cards">
-      <div className="instr-card instr-card--warn">
+      <div className="instr-card">
         <div className="instr-card__title">Foods to avoid</div>
         <div className="instr-card__body">
           <ul className="instr-card__list">
@@ -698,7 +698,7 @@ function ColonoscopyInstructions() {
           <p className="instr-card__prose">Ask your doctor before changing any medication. Blood thinners, diabetes medications, iron supplements, and some anti-inflammatory medicines may need special instructions.</p>
         </div>
       </div>
-      <div className="instr-card instr-card--alert">
+      <div className="instr-card">
         <div className="instr-card__title">Call your clinic if</div>
         <div className="instr-card__body">
           <ul className="instr-card__list">
@@ -821,20 +821,20 @@ const COLONOSCOPY = {
       tab: 'timeline',
       title: 'Questions to ask your doctor',
       body: () => (
-        <ul className="bullet-list">
-          <li>
-            <div className="bullet-list__label">Should I take my regular medications?</div>
-            <div className="bullet-list__desc">Especially blood thinners, diabetes medication, and blood pressure medication.</div>
-          </li>
-          <li>
-            <div className="bullet-list__label">What if I have trouble with the prep?</div>
-            <div className="bullet-list__desc">If you can't finish the solution, or your stool isn't clear by procedure morning, call the clinic — they may delay.</div>
-          </li>
-          <li>
-            <div className="bullet-list__label">When will I get results?</div>
-            <div className="bullet-list__desc">Visual findings are shared right after; biopsy results typically take 5–7 days.</div>
-          </li>
-        </ul>
+        <div className="qa-list">
+          <div className="qa-row">
+            <div className="qa-row__q">Should I take my regular medications?</div>
+            <div className="qa-row__a">Especially blood thinners, diabetes medication, and blood pressure medication.</div>
+          </div>
+          <div className="qa-row">
+            <div className="qa-row__q">What if I have trouble with the prep?</div>
+            <div className="qa-row__a">If you can't finish the solution, or your stool isn't clear by procedure morning, call the clinic — they may delay.</div>
+          </div>
+          <div className="qa-row">
+            <div className="qa-row__q">When will I get results?</div>
+            <div className="qa-row__a">Visual findings are shared right after; biopsy results typically take 5–7 days.</div>
+          </div>
+        </div>
       ),
     },
     {

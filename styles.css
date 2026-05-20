@@ -3236,15 +3236,22 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
 }
 .instr-card__list li::before { content: '–'; position: absolute; left: 0; color: var(--text-faint); }
 .instr-card__prose { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
-.instr-card--warn .instr-card__title {
-  background: var(--warm-soft);
-  color: var(--warm);
-  border-bottom-color: oklch(0.88 0.06 45);
+
+/* Q&A two-column list */
+.qa-list { display: flex; flex-direction: column; }
+.qa-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 28px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: baseline;
 }
-.instr-card--alert .instr-card__title {
-  background: oklch(0.97 0.02 27);
-  color: var(--danger);
-  border-bottom-color: oklch(0.9 0.04 27);
+.qa-row:last-child { border-bottom: 0; }
+.qa-row__q { font-size: 14px; font-weight: 500; color: var(--text); }
+.qa-row__a { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+@media (max-width: 560px) {
+  .qa-row { grid-template-columns: 1fr; gap: 4px; }
 }
 
 /* === Procedure location cards === */
