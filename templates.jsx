@@ -144,6 +144,12 @@ function ProviderHero({ providers }) {
               <span style={{color: 'var(--text-muted)', fontSize: 13}}>{p.dist}</span>
               <span className="prov-hero__dot">·</span>
               <span style={{color: 'var(--text-muted)', fontSize: 13}}>Speaks {p.langs}</span>
+              {p.ins && (
+                <>
+                  <span className="prov-hero__dot">·</span>
+                  <span style={{color: 'var(--text-muted)', fontSize: 13}}>{p.ins}</span>
+                </>
+              )}
             </div>
             <div className="prov-hero__avail">
               <span style={{fontSize: 12, color: 'var(--text-muted)'}}>Next available</span>

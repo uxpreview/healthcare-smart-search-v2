@@ -353,20 +353,54 @@ const STRETCHES = {
 /* ============================================================ */
 /* === PRIMARY_CARE: provider-first search ==================== */
 /* ============================================================ */
+
+function PrimaryCareLocs() {
+  const locs = [
+    { name: '[System] Midtown Primary Care',   dist: '0.5 mi', address: '245 W 38th St', hours: 'Open today until 6:00 PM',    doctors: 8, phone: '(212) 555-0122', virtual: false },
+    { name: '[System] West Side Primary Care', dist: '1.2 mi', address: '410 W 57th St', hours: 'Open today until 5:00 PM',    doctors: 6, phone: '(212) 555-0177', virtual: false },
+    { name: '[System] Chelsea Primary Care',   dist: '1.6 mi', address: '90 8th Ave',    hours: 'Open today until 7:00 PM',    doctors: 5, phone: '(212) 555-0165', virtual: false },
+    { name: '[System] Virtual Primary Care',   dist: null,     address: 'Video visits available', hours: 'Same-week appointments', doctors: 7, phone: '(212) 555-0110', virtual: true },
+  ];
+  return (
+    <div className="proc-locs">
+      {locs.map((loc, i) => (
+        <div className="proc-loc" key={i}>
+          <div className="proc-loc__main">
+            <div className="proc-loc__name">{loc.name}</div>
+            <div className="proc-loc__meta">
+              {loc.dist
+                ? <div className="meta-row">{Icon.MapPin()}<span>{loc.dist} · {loc.address}</span></div>
+                : <div className="meta-row">{Icon.Video()}<span>{loc.address}</span></div>
+              }
+              <div className="meta-row">{Icon.Clock()}<span>{loc.hours}</span></div>
+              <div className="meta-row">{Icon.Stethoscope()}<span>{loc.doctors} primary care doctors</span></div>
+              <div className="meta-row">{Icon.Phone()}<span>{loc.phone}</span></div>
+            </div>
+          </div>
+          <div className="proc-loc__actions">
+            <button className="btn btn--primary">{loc.virtual ? 'View virtual visits' : 'View doctors'}</button>
+            <button className="btn">{loc.virtual ? 'Learn more' : 'Get directions'}</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const PRIMARY_CARE = {
   query: "Find a primary care doctor near me",
-  chatLabel: "Primary care doctors",
+  chatLabel: "Find a primary care doctor near me",
   tabs: [
-    { id: 'doctors', label: 'Doctors', icon: 'Stethoscope', count: 12, confidence: 'high' },
-    { id: 'locations', label: 'Locations', icon: 'MapPin', count: 4, confidence: 'high' },
-    { id: 'appointments', label: 'Appointments', icon: 'Calendar', count: 8, confidence: 'high' },
-    { id: 'pages', label: 'Pages', icon: 'FileText', count: 3, confidence: 'high' },
+    { id: 'doctors',      label: 'Doctors',      icon: 'Stethoscope', count: 12, confidence: 'high' },
+    { id: 'appointments', label: 'Appointments', icon: 'Calendar',    count: 8,  confidence: 'high' },
+    { id: 'locations',    label: 'Locations',    icon: 'MapPin',      count: 4,  confidence: 'high' },
+    { id: 'pages',        label: 'Pages',        icon: 'FileText',    count: 5,  confidence: 'high' },
   ],
   summary: [
     { text: "Found " },
     { text: "12 primary care doctors", cite: [1] },
-    { text: " accepting new patients within 2 miles of 10001. Showing those with availability in the next two weeks, sorted by patient rating." },
-    { text: " All accept your insurance ([Plan] PPO)", cite: [2] },
+    { text: " accepting new patients within 2 miles of 10001. Showing doctors with availability in the next two weeks, sorted by fit. " },
+    { text: "All accept your insurance ([Plan] PPO)", cite: [2] },
     { text: "." },
   ],
   sections: [
@@ -383,6 +417,7 @@ const PRIMARY_CARE = {
             rating: 4.9, count: 412,
             dist: '0.8 mi · Midtown',
             langs: 'English, French',
+            ins: 'Accepts [Plan] PPO',
             slots: ['Tomorrow 9:40 AM', 'Thu 11:20 AM', 'Fri 2:00 PM'],
             acceptingNew: true,
           },
@@ -393,6 +428,7 @@ const PRIMARY_CARE = {
             rating: 4.8, count: 287,
             dist: '0.5 mi · Midtown',
             langs: 'English, Spanish',
+            ins: 'Accepts [Plan] PPO',
             slots: ['Today 4:30 PM', 'Tomorrow 8:15 AM'],
             acceptingNew: true,
           },
@@ -403,6 +439,7 @@ const PRIMARY_CARE = {
             rating: 4.8, count: 521,
             dist: '1.4 mi · West Side',
             langs: 'English, Mandarin',
+            ins: 'Accepts [Plan] PPO',
             slots: ['Mon 10:00 AM', 'Tue 1:45 PM'],
             acceptingNew: true,
           },
@@ -412,16 +449,16 @@ const PRIMARY_CARE = {
     {
       id: 'compare',
       tab: 'doctors',
-      title: 'Compare',
+      title: 'Compare doctors',
       body: () => (
         <window.CompareTable
-          headers={['Doctor', 'Distance', 'Next available', 'Languages', 'New patients']}
+          headers={['Doctor', 'Distance', 'Next available', 'Languages', 'New patients', 'Insurance']}
           rows={[
-            [{type: 'name', name: 'Dr. Maya Okonjo', sub: 'Family Medicine · 4.9★'}, '0.8 mi', 'Tomorrow', 'En, Fr', {type: 'tag', label: 'Accepting'}],
-            [{type: 'name', name: 'Dr. Samuel Reyes', sub: 'Internal · 4.8★'}, '0.5 mi', 'Today', 'En, Es', {type: 'tag', label: 'Accepting'}],
-            [{type: 'name', name: 'Dr. Lin Chen', sub: 'Family · 4.8★'}, '1.4 mi', 'Monday', 'En, Zh', {type: 'tag', label: 'Accepting'}],
-            [{type: 'name', name: 'Dr. Aaron Patel', sub: 'Internal · 4.6★'}, '0.7 mi', '~2 weeks', 'En, Hi', {type: 'tag', label: 'Waitlist', neutral: true}],
-            [{type: 'name', name: 'Dr. Yara Hadid', sub: 'Family · 4.9★'}, '1.8 mi', '~3 weeks', 'En, Ar', {type: 'tag', label: 'Waitlist', neutral: true}],
+            [{type:'name', name:'Dr. Maya Okonjo',  sub:'Family Medicine · 4.9★'},   '0.8 mi', 'Tomorrow', 'En, Fr', {type:'tag', label:'Accepting'},             '[Plan] PPO'],
+            [{type:'name', name:'Dr. Samuel Reyes', sub:'Internal Medicine · 4.8★'}, '0.5 mi', 'Today',    'En, Es', {type:'tag', label:'Accepting'},             '[Plan] PPO'],
+            [{type:'name', name:'Dr. Lin Chen',     sub:'Family Medicine · 4.8★'},   '1.4 mi', 'Monday',   'En, Zh', {type:'tag', label:'Accepting'},             '[Plan] PPO'],
+            [{type:'name', name:'Dr. Aaron Patel',  sub:'Internal Medicine · 4.6★'}, '0.7 mi', '~2 weeks', 'En, Hi', {type:'tag', label:'Waitlist', neutral:true}, '[Plan] PPO'],
+            [{type:'name', name:'Dr. Yara Hadid',   sub:'Family Medicine · 4.9★'},   '1.8 mi', '~3 weeks', 'En, Ar', {type:'tag', label:'Waitlist', neutral:true}, '[Plan] PPO'],
           ]}
         />
       ),
@@ -429,55 +466,86 @@ const PRIMARY_CARE = {
     {
       id: 'appts',
       tab: 'appointments',
-      title: 'Soonest available',
+      title: 'Soonest available appointments',
       body: () => (
-        <window.AppointmentSlots
-          slots={[
-            { time: '4:30 PM', when: 'Today',     loc: 'Dr. Samuel Reyes \u00b7 Internal Medicine', dist: '0.5 mi \u00b7 Midtown',    wait: 'In-person', closes: '15-min appt' },
-            { time: '9:40 AM', when: 'Tomorrow',  loc: 'Dr. Maya Okonjo \u00b7 Family Medicine',    dist: '0.8 mi \u00b7 Midtown',    wait: 'In-person', closes: '30-min appt' },
-            { time: '11:20 AM',when: 'Thursday',  loc: 'Dr. Maya Okonjo \u00b7 Family Medicine',    dist: '0.8 mi \u00b7 Midtown',    wait: 'Telehealth available', closes: '30-min appt' },
-            { time: '1:45 PM', when: 'Tuesday',   loc: 'Dr. Lin Chen \u00b7 Family Medicine',       dist: '1.4 mi \u00b7 West Side',  wait: 'In-person', closes: '30-min appt' },
-          ]}
-        />
+        <>
+          <p style={{fontSize: 13, color: 'var(--text-muted)', marginBottom: 12}}>These are open primary care appointments from doctors who accept [Plan] PPO.<sup><a href="#src-3" className="cite">3</a></sup></p>
+          <window.AppointmentSlots slots={[
+            { time: '4:30 PM',  when: 'Today',    loc: 'Dr. Samuel Reyes · Internal Medicine', dist: '0.5 mi · Midtown',   wait: 'In-person',            closes: '30-min appt' },
+            { time: '5:20 PM',  when: 'Today',    loc: 'Dr. Nina Brooks · Family Medicine',    dist: '1.1 mi · Midtown',   wait: 'In-person',            closes: '30-min appt' },
+            { time: '8:15 AM',  when: 'Tomorrow', loc: 'Dr. Samuel Reyes · Internal Medicine', dist: '0.5 mi · Midtown',   wait: 'In-person',            closes: '30-min appt' },
+            { time: '9:40 AM',  when: 'Tomorrow', loc: 'Dr. Maya Okonjo · Family Medicine',    dist: '0.8 mi · Midtown',   wait: 'In-person',            closes: '30-min appt' },
+            { time: '2:10 PM',  when: 'Tomorrow', loc: 'Dr. Elena Moore · Family Medicine',    dist: '1.7 mi · West Side', wait: 'In-person',            closes: '30-min appt' },
+            { time: '11:20 AM', when: 'Thursday', loc: 'Dr. Maya Okonjo · Family Medicine',    dist: '0.8 mi · Midtown',   wait: 'Telehealth available', closes: '30-min appt' },
+            { time: '3:00 PM',  when: 'Thursday', loc: 'Dr. Ben Carter · Internal Medicine',   dist: '1.9 mi · Chelsea',   wait: 'In-person',            closes: '30-min appt' },
+          ]} />
+        </>
       ),
     },
     {
-      id: 'choose',
+      id: 'pc-locations',
+      tab: 'locations',
+      title: 'Primary care locations near you',
+      body: () => <PrimaryCareLocs />,
+    },
+    {
+      id: 'pages-results',
       tab: 'pages',
-      title: 'How to choose',
+      title: 'Related pages',
       body: () => (
-        <>
-          <p>A few things people often consider when picking a primary care doctor:<sup><a href="#src-3" className="cite">3</a></sup></p>
-          <ul className="bullet-list">
-            <li>
-              <div className="bullet-list__label">Location & hours</div>
-              <div className="bullet-list__desc">Pick a doctor close to home or work — convenience is the #1 predictor of whether people actually attend annual checkups.</div>
-            </li>
-            <li>
-              <div className="bullet-list__label">Communication style</div>
-              <div className="bullet-list__desc">Some people prefer a doctor who explains in detail; others want quick, direct answers. Read recent reviews to get a sense.</div>
-            </li>
-            <li>
-              <div className="bullet-list__label">In-network status</div>
-              <div className="bullet-list__desc">All 5 above are in-network with your plan. Verify at booking — out-of-network can mean $200+ per visit.</div>
-            </li>
-          </ul>
-        </>
+        <window.PageResults items={[
+          {
+            kind: 'Service',
+            url: '/services/primary-care',
+            title: 'Primary care',
+            snippet: 'Learn about family medicine, internal medicine, annual checkups, preventive care, and ongoing health management.',
+            meta: ['Service line', 'Patient services'],
+          },
+          {
+            kind: 'Find care',
+            url: '/find-care/primary-care',
+            title: 'Find a primary care doctor',
+            snippet: 'Search primary care providers by location, insurance, availability, language, and accepting-new-patient status.',
+            meta: ['Directory', '12 doctors near you'],
+          },
+          {
+            kind: 'Patient guidance',
+            url: '/learn/family-vs-internal-medicine',
+            title: 'Family medicine vs. internal medicine',
+            snippet: 'Understand the difference between family medicine and internal medicine when choosing a primary care doctor.',
+            meta: ['Clinician-reviewed', '3 min read'],
+          },
+          {
+            kind: 'Preventive care',
+            url: '/learn/annual-physicals',
+            title: 'Annual physicals and preventive care',
+            snippet: 'Learn what is included in a routine checkup and which screenings may be recommended.',
+            meta: ['Clinician-reviewed', '4 min read'],
+          },
+          {
+            kind: 'Billing and insurance',
+            url: '/billing/insurance-accepted',
+            title: 'Insurance accepted',
+            snippet: 'Review accepted insurance plans and learn how to confirm coverage before your visit.',
+            meta: ['Updated May 2026', 'Plans accepted'],
+          },
+        ]} />
       ),
     },
   ],
   sources: [
-    { num: 1, fav: 'S', name: '[System] Provider Directory', title: 'Primary care providers — Midtown Manhattan', date: 'Updated May 2026', url: '#' },
-    { num: 2, fav: 'P', name: '[Plan]', title: 'Network provider lookup — PPO plan', date: 'May 2026', url: '#' },
-    { num: 3, fav: 'S', name: '[System] Patient Resources', title: 'How to choose a primary care doctor', date: 'Mar 2026', url: '#' },
+    { num: 1, fav: 'S', name: '[System] Provider Directory', title: 'Primary care providers — Midtown Manhattan',  date: 'Updated May 2026', url: '#' },
+    { num: 2, fav: 'P', name: '[Plan]',                      title: 'Network provider lookup — PPO plan',          date: 'May 2026',         url: '#' },
+    { num: 3, fav: 'S', name: '[System] Scheduling',         title: 'Appointment availability — primary care',     date: 'Live',             url: '#' },
+    { num: 4, fav: 'S', name: '[System] Locations',          title: 'Primary care location directory',                  date: 'Updated May 2026', url: '#' },
   ],
   followups: [
     "Show female doctors only",
     "Doctors with same-day appointments",
-    "Filter by accepting new pediatric patients",
-    "Compare top 3 in detail",
+    "Compare the top 3 in detail",
   ],
 };
+
 
 /* ============================================================ */
 /* === URGENT_CARE: location + wait-time first ================ */
