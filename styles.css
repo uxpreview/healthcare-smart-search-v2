@@ -1904,8 +1904,6 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
 /* Section icon (if used) */
 .section__head svg { width: 16px; height: 16px; color: var(--text-faint); }
 
-/* Sources head icon */
-.sources__head svg { width: 13px; height: 13px; }
 .tab__count + svg, .tab svg { width: 14px; height: 14px; }
 
 /* Tools icons */
@@ -2093,7 +2091,6 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   .composer { padding: 14px 18px 18px; }
   .landing__title { font-size: 28px; }
   .query { font-size: 22px; }
-  .sources__grid { grid-template-columns: 1fr; }
   .landing__categories { grid-template-columns: 1fr; }
 }
 

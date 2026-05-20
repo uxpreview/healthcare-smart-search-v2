@@ -1215,7 +1215,7 @@ function RightRail() {
       <div className="rail__label">Nearby locations</div>
       <div style={{
         height: 160,
-        background: 'linear-gradient(135deg, var(--bg-alt) 0%, var(--surface-2) 100%)',
+        background: 'var(--surface)',
         border: '1px solid var(--border)',
         borderRadius: 10,
         marginTop: 8,

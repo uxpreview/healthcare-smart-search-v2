@@ -51,50 +51,6 @@ function Section({ section, idx, registerRef, ctx }) {
   );
 }
 
-function SourcesStrip({ sources, activeTab }) {
-  // Compact horizontal bar: stacked favicons → "Sources" + summary → See more →
-  const top = sources.slice(0, 3);
-  const names = sources.slice(0, 3).map(s => s.name.replace(/^\[System\]\s*/, '')).filter(Boolean);
-  const fallback = sources.length === 1
-    ? `Read the full piece from ${sources[0].name}.`
-    : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} contributed to this view.`;
-  const perTab = {
-    locations: 'Live hours, wait-time feeds, and reservation availability from connected [System] locations.',
-    reserve: 'Real-time appointment availability pulled from [System] scheduling. Capacity changes minute-to-minute.',
-    guidance: 'Reviewed patient education and clinical guidance from [System] specialty teams.',
-    doctors: 'Provider directory, credentials, and [Plan] network status as of this week.',
-    appointments: 'Real-time appointment availability from connected [System] schedulers.',
-    pages: 'Reference articles cited inline above — patient-facing content reviewed by [System] clinicians.',
-  };
-  const summary = (activeTab && perTab[activeTab]) || fallback;
-  return (
-    <div className="sources-compact">
-      <div className="sources-compact__avatars">
-        {top.map((s, i) => (
-          <div
-            key={s.num}
-            className="sources-compact__fav"
-            style={{zIndex: top.length - i, marginLeft: i === 0 ? 0 : -10}}
-            title={s.name}>
-            {s.fav}
-          </div>
-        ))}
-      </div>
-      <div className="sources-compact__body">
-        <div className="sources-compact__title">Sources <span className="sources-compact__title-sub">for {activeTab || 'this answer'}</span></div>
-        <div className="sources-compact__desc">{summary}</div>
-      </div>
-      <a className="sources-compact__more" href="#sources">
-        <span>See more</span>
-        <span className="sources-compact__caret">{Icon.ChevronDown()}</span>
-      </a>
-      {/* hidden inline anchors so cites keep working */}
-      <div style={{display: 'none'}}>
-        {sources.map(s => <span key={s.num} id={`src-${s.num}`}></span>)}
-      </div>
-    </div>
-  );
-}
 
 function ActionsRow() {
   const [reaction, setReaction] = useState(null);
