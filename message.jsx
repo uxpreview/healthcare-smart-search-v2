@@ -1,0 +1,317 @@
+/* === Message / answer renderer === */
+const Icon = window.Icon;
+const { useState, useEffect, useRef, useMemo } = React;
+
+function StreamingSummary({ tokens, done }) {
+  // tokens: array of {text, cite} — animate appearance over time
+  const [visible, setVisible] = useState(done ? tokens.length : 0);
+  useEffect(() => {
+    if (done) { setVisible(tokens.length); return; }
+    setVisible(0);
+    let i = 0;
+    const interval = setInterval(() => {
+      i += 1;
+      if (i > tokens.length) { clearInterval(interval); return; }
+      setVisible(i);
+    }, 220);
+    return () => clearInterval(interval);
+  }, [tokens, done]);
+
+  return (
+    <div className="summary">
+      <p>
+        {tokens.slice(0, visible).map((t, idx) => (
+          <span key={idx} className="fade-in">
+            {t.text}
+            {t.cite && t.cite.map(n => (
+              <a href={`#src-${n}`} className="cite" key={n}>{n}</a>
+            ))}
+          </span>
+        ))}
+        {!done && visible < tokens.length && <span className="streaming-pulse"></span>}
+      </p>
+    </div>
+  );
+}
+
+function Section({ section, idx, registerRef, ctx }) {
+  const ref = useRef(null);
+  useEffect(() => { if (ref.current) registerRef(section.id, ref.current); }, []);
+  const num = String(idx + 1).padStart(2, '0');
+  return (
+    <section ref={ref} id={section.id} className="section fade-in" data-screen-label={`${num} ${section.title}`}>
+      <header className="section__head">
+        <span className="section__num">/ {num}</span>
+        <h2 className="section__title">{section.title}</h2>
+      </header>
+      <div className="section__body">
+        {section.body(ctx || {})}
+      </div>
+    </section>
+  );
+}
+
+function SourcesStrip({ sources, activeTab }) {
+  // Compact horizontal bar: stacked favicons → "Sources" + summary → See more →
+  const top = sources.slice(0, 3);
+  const names = sources.slice(0, 3).map(s => s.name.replace(/^\[System\]\s*/, '')).filter(Boolean);
+  const fallback = sources.length === 1
+    ? `Read the full piece from ${sources[0].name}.`
+    : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} contributed to this view.`;
+  const perTab = {
+    locations: 'Live hours, wait-time feeds, and reservation availability from connected [System] locations.',
+    reserve: 'Real-time appointment availability pulled from [System] scheduling. Capacity changes minute-to-minute.',
+    guidance: 'Reviewed patient education and clinical guidance from [System] specialty teams.',
+    doctors: 'Provider directory, credentials, and [Plan] network status as of this week.',
+    appointments: 'Real-time appointment availability from connected [System] schedulers.',
+    pages: 'Reference articles cited inline above — patient-facing content reviewed by [System] clinicians.',
+  };
+  const summary = (activeTab && perTab[activeTab]) || fallback;
+  return (
+    <div className="sources-compact">
+      <div className="sources-compact__avatars">
+        {top.map((s, i) => (
+          <div
+            key={s.num}
+            className="sources-compact__fav"
+            style={{zIndex: top.length - i, marginLeft: i === 0 ? 0 : -10}}
+            title={s.name}>
+            {s.fav}
+          </div>
+        ))}
+      </div>
+      <div className="sources-compact__body">
+        <div className="sources-compact__title">Sources <span className="sources-compact__title-sub">for {activeTab || 'this answer'}</span></div>
+        <div className="sources-compact__desc">{summary}</div>
+      </div>
+      <a className="sources-compact__more" href="#sources">
+        <span>See more</span>
+        <span className="sources-compact__caret">{Icon.ChevronDown()}</span>
+      </a>
+      {/* hidden inline anchors so cites keep working */}
+      <div style={{display: 'none'}}>
+        {sources.map(s => <span key={s.num} id={`src-${s.num}`}></span>)}
+      </div>
+    </div>
+  );
+}
+
+function ActionsRow() {
+  const [reaction, setReaction] = useState(null);
+  return (
+    <div className="actions-row">
+      <div className="actions-row__buttons">
+        <button className="action-btn" title="Copy">{Icon.Copy()}</button>
+        <button className="action-btn" title="Share">{Icon.Share()}</button>
+        <button className="action-btn" title="Retry">{Icon.Refresh()}</button>
+        <button
+          className={'action-btn' + (reaction === 'up' ? ' action-btn--active' : '')}
+          onClick={() => setReaction(r => r === 'up' ? null : 'up')}
+          title="Good response">
+          {Icon.ThumbsUp()}
+        </button>
+        <button
+          className={'action-btn' + (reaction === 'down' ? ' action-btn--active' : '')}
+          onClick={() => setReaction(r => r === 'down' ? null : 'down')}
+          title="Bad response">
+          {Icon.ThumbsDown()}
+        </button>
+      </div>
+      <div className="actions-row__note">AI can make mistakes. Double check responses.</div>
+    </div>
+  );
+}
+
+function FollowUps({ chips, onPick }) {
+  const items = (chips || []).slice(0, 3);
+  if (!items.length) return null;
+  return (
+    <div className="followups">
+      <div className="followups__label">You can also ask</div>
+      <ul className="followups__list">
+        {items.map((c, i) => (
+          <li key={i}>
+            <button className="followup-link" onClick={() => onPick(c)}>
+              <span className="followup-link__icon">{Icon.CornerUpLeft()}</span>
+              <span>{c}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Disclaimer() {
+  return (
+    <div className="disclaimer">
+      {Icon.Info()}
+      <span>AI answers may contain errors. Information from [System] and partner sources is not a substitute for professional medical advice — consult a clinician for diagnosis and treatment.</span>
+    </div>
+  );
+}
+
+function ThinkingState() {
+  const [phase, setPhase] = useState(0);
+  const phases = ['Searching [System] clinical library…', 'Cross-referencing internal sources…', 'Composing answer…'];
+  useEffect(() => {
+    const id = setInterval(() => setPhase(p => Math.min(p + 1, phases.length - 1)), 700);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="thinking">
+      <div className="thinking__dots"><span></span><span></span><span></span></div>
+      <span>{phases[phase]}</span>
+    </div>
+  );
+}
+
+/* === Inline tabs (below the AI summary) === */
+function InlineTabs({ tabs, active, onChange, scrollRoot, onDockChange }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const target = ref.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        const rootTop = e.rootBounds ? e.rootBounds.top : 0;
+        const docked = !e.isIntersecting && e.boundingClientRect.top < rootTop;
+        if (onDockChange) onDockChange(docked);
+      },
+      { root: scrollRoot || null, threshold: 0, rootMargin: '0px 0px 0px 0px' }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [scrollRoot, onDockChange]);
+
+  return (
+    <div ref={ref} className="inline-tabs" role="tablist">
+      {tabs.map(t => {
+        const showCount = t.count != null && t.confidence !== 'low';
+        const hint = t.confidence === 'gated' ? 'Sign in' : t.confidence === 'low' ? 'Refine' : null;
+        return (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={active === t.id}
+            className={'inline-tab' + (active === t.id ? ' inline-tab--active' : '') + (t.confidence === 'low' || t.confidence === 'gated' ? ' inline-tab--soft' : '')}
+            onClick={() => onChange(t.id)}>
+            <span className="inline-tab__icon">{Icon[t.icon]()}</span>
+            <span className="inline-tab__label">{t.label}</span>
+            {showCount && (
+              <span className="inline-tab__count">{t.count}</span>
+            )}
+            {!showCount && hint && (
+              <span className="inline-tab__hint">{hint}</span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function TabRefinement({ tab, onFollowUp }) {
+  if (!tab) return null;
+  const r = tab.refinement;
+  if (r) {
+    return (
+      <div className="tab-refine fade-in">
+        <div className="tab-refine__head">
+          <span className="tab-refine__icon">{Icon.Sliders()}</span>
+          <span className="tab-refine__label">Needs refinement</span>
+        </div>
+        <h3 className="tab-refine__title">{r.title}</h3>
+        <p className="tab-refine__body">{r.body}</p>
+        {r.chips && (
+          <div className="tab-refine__chips">
+            {r.chips.map((c, i) => (
+              <button
+                key={i}
+                className="tab-refine__chip"
+                onClick={() => onFollowUp && onFollowUp(`${c} \u2014 urgent care near me`)}>
+                <span>{c}</span>
+                <span className="tab-refine__chip-plus">{Icon.Plus()}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+  // Fallback for tabs without explicit refinement copy but no sections either.
+  return (
+    <div className="tab-refine fade-in">
+      <div className="tab-refine__head">
+        <span className="tab-refine__icon">{Icon[tab.icon]()}</span>
+        <span className="tab-refine__label">{tab.label}</span>
+      </div>
+      <h3 className="tab-refine__title">No high-confidence results yet</h3>
+      <p className="tab-refine__body">Results for this view will appear once we have a clearer match. Try a follow-up to narrow the search.</p>
+    </div>
+  );
+}
+
+/* === Message: one Q&A turn === */
+function Message({ msg, onFollowUp, onSectionInView, isLast, idx, activeTab, onTabChange, scrollRoot, onDockChange, isCurrent, loggedIn }) {
+  const sectionRefs = useRef({});
+  const registerRef = (id, el) => { sectionRefs.current[id] = el; };
+  const ctx = { loggedIn };
+
+  // status: 'thinking' | 'summary' | 'sections' | 'done'
+  const status = msg.status;
+  const sectionsVisible = msg.sectionsVisible || 0;
+  const tabs = msg.data.tabs && Array.isArray(msg.data.tabs) ? msg.data.tabs : null;
+  const showTabs = isCurrent && tabs && tabs.length > 1 && (status === 'sections' || status === 'done');
+  const defaultTab = tabs && tabs[0] ? tabs[0].id : null;
+  const currentTab = activeTab || defaultTab;
+  const visibleSections = msg.data.sections.slice(0, sectionsVisible);
+  // Filter sections by active tab (only when tabs exist; sections without tab default to the default tab)
+  const filtered = tabs
+    ? visibleSections.filter(s => (s.tab || defaultTab) === currentTab)
+    : visibleSections;
+  const activeTabObj = tabs ? tabs.find(t => t.id === currentTab) : null;
+
+  return (
+    <div className="message" data-msg-idx={idx} data-msg-id={msg.id} data-sources={JSON.stringify(msg.data.sources || [])} data-screen-label={`Message ${idx + 1}`}>
+      <h1 className="query">{msg.query}</h1>
+      {status === 'thinking' && <ThinkingState />}
+      {status !== 'thinking' && (
+        <div className="answer-block">
+          <StreamingSummary tokens={msg.data.summary} done={status === 'done' || status === 'sections'} />
+        </div>
+      )}
+      {showTabs && (
+        <InlineTabs
+          tabs={tabs}
+          active={currentTab}
+          onChange={onTabChange}
+          scrollRoot={scrollRoot}
+          onDockChange={onDockChange}
+        />
+      )}
+      {(status === 'sections' || status === 'done') && (
+        <>
+          {filtered.map((s, i) => (
+            <Section key={s.id} section={s} idx={i} registerRef={registerRef} ctx={ctx} />
+          ))}
+          {showTabs && filtered.length === 0 && status === 'done' && (
+            <TabRefinement tab={activeTabObj} onFollowUp={onFollowUp} />
+          )}
+          {status === 'sections' && sectionsVisible < msg.data.sections.length && (
+            <ThinkingState />
+          )}
+        </>
+      )}
+      {status === 'done' && (
+        <>
+          <ActionsRow />
+          {isLast && <FollowUps chips={msg.data.followups} onPick={onFollowUp} />}
+        </>
+      )}
+    </div>
+  );
+}
+
+window.AlmaMessage = Message;
