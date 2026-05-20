@@ -434,13 +434,17 @@ function LeftRail({ history, onNewConv, onPickHistory, collapsed, onToggleCollap
       <div className="rail__user-wrap">
           {userMenuOpen &&
         <div className="user-menu">
-              <button className="user-menu__item" onClick={() => {onCloseMenu();onPickAgent('settings');}}>
-                <span className="user-menu__icon">{Icon.Settings()}</span>
-                <span>Settings</span>
+              <button className="user-menu__item" onClick={() => {onCloseMenu();onPickAgent('care-profile');}}>
+                <span className="user-menu__icon">{Icon.Person()}</span>
+                <span>Care profile</span>
               </button>
               <button className="user-menu__item" onClick={() => {onCloseMenu();onPickAgent('preferences');}}>
                 <span className="user-menu__icon">{Icon.Sliders()}</span>
                 <span>Search preferences</span>
+              </button>
+              <button className="user-menu__item" onClick={() => {onCloseMenu();onPickAgent('settings');}}>
+                <span className="user-menu__icon">{Icon.Settings()}</span>
+                <span>Settings</span>
               </button>
               <button className="user-menu__item">
                 <span className="user-menu__icon">{Icon.Globe()}</span>
@@ -470,7 +474,7 @@ function LeftRail({ history, onNewConv, onPickHistory, collapsed, onToggleCollap
 
 /* === Main header (Search ⌄ left) === */
 function MainHeader({ mode, onModeChange }) {
-  const labels = { search: 'Search', 'check-symptoms': 'Check symptoms', 'find-care': 'Find care', 'schedule': 'Schedule appointment', 'preferences': 'Search preferences', 'settings': 'Settings' };
+  const labels = { search: 'Search', 'check-symptoms': 'Check symptoms', 'find-care': 'Find care', 'schedule': 'Schedule appointment', 'care-profile': 'Care profile', 'preferences': 'Search preferences', 'settings': 'Settings' };
   return (
     <div className="main__header">
       <button className="main__mode">
@@ -571,216 +575,6 @@ function ChatHeader({ chatLabel, tabs, activeTab, onTabChange, docked }) {
             <div className="role-menu__footer">Personalizes language, sources, and detail level.</div>
           </div>
         }
-      </div>
-    </div>);
-
-}
-
-/* === Search Preferences — care profile screen === */
-function SearchPreferences({ onSave, onCancel }) {
-  const [profile, setProfile] = React.useState({
-    name: 'Ryan McCarty',
-    dob: '1989-04-12',
-    zip: '10001',
-    pronouns: 'he/him',
-    plan: '[Plan] PPO — Family',
-    memberId: 'P-44829-001',
-    pcp: 'Dr. Maya Okonjo',
-    visitType: 'either',
-    languages: ['English'],
-    accessibility: [],
-    conditions: 'Mild seasonal allergies',
-    medications: 'Loratadine 10mg, daily',
-    allergies: 'Penicillin (rash)',
-    pregnant: 'no'
-  });
-
-  const set = (k, v) => setProfile((p) => ({ ...p, [k]: v }));
-  const toggle = (k, v) => setProfile((p) => ({
-    ...p,
-    [k]: p[k].includes(v) ? p[k].filter((x) => x !== v) : [...p[k], v]
-  }));
-
-  return (
-    <div className="prefs fade-in">
-      <div className="prefs__head">
-        <div className="prefs__badge">
-          <span className="prefs__badge-icon">{Icon.Sliders()}</span>
-          <span>Search preferences</span>
-        </div>
-        <h1 className="prefs__title">Your care profile</h1>
-        <p className="prefs__sub">
-          Fill this in once so every search lands faster. We'll use this to filter providers, pre-check coverage, and tailor recommendations — and you can change it any time.
-        </p>
-      </div>
-
-      <PrefSection title="About you" num="01">
-        <PrefField label="Full name" value={profile.name} onChange={(v) => set('name', v)} />
-        <PrefRow>
-          <PrefField label="Date of birth" value={profile.dob} onChange={(v) => set('dob', v)} placeholder="YYYY-MM-DD" />
-          <PrefField label="ZIP code" value={profile.zip} onChange={(v) => set('zip', v)} placeholder="10001" />
-          <PrefField label="Pronouns" value={profile.pronouns} onChange={(v) => set('pronouns', v)} placeholder="they/them" />
-        </PrefRow>
-      </PrefSection>
-
-      <PrefSection title="Insurance" num="02">
-        <PrefRow>
-          <PrefField label="Plan" value={profile.plan} onChange={(v) => set('plan', v)} grow />
-          <PrefField label="Member ID" value={profile.memberId} onChange={(v) => set('memberId', v)} />
-        </PrefRow>
-      </PrefSection>
-
-      <PrefSection title="Care preferences" num="03">
-        <PrefField label="Primary care doctor" value={profile.pcp} onChange={(v) => set('pcp', v)} hint="We'll prioritize them when you ask 'who should I see for…'" />
-        <PrefRadio
-          label="Visit type"
-          value={profile.visitType}
-          onChange={(v) => set('visitType', v)}
-          options={[
-          { value: 'in-person', label: 'In-person' },
-          { value: 'telehealth', label: 'Telehealth' },
-          { value: 'either', label: 'Either is fine' }]
-          } />
-        
-        <PrefChips
-          label="Languages you'd like care in"
-          values={profile.languages}
-          onToggle={(v) => toggle('languages', v)}
-          options={['English', 'Spanish', 'French', 'Mandarin', 'Hindi', 'Arabic', 'Portuguese']} />
-        
-        <PrefChips
-          label="Accessibility needs"
-          values={profile.accessibility}
-          onToggle={(v) => toggle('accessibility', v)}
-          options={['Wheelchair access', 'ASL interpreter', 'Sensory-friendly room', 'Sign-language video']} />
-        
-      </PrefSection>
-
-      <PrefSection title="Health profile" num="04">
-        <PrefField
-          label="Ongoing conditions"
-          value={profile.conditions}
-          onChange={(v) => set('conditions', v)}
-          hint="So we don't surface care that conflicts with what you're managing"
-          textarea />
-        
-        <PrefField
-          label="Current medications"
-          value={profile.medications}
-          onChange={(v) => set('medications', v)}
-          textarea />
-        
-        <PrefField
-          label="Allergies"
-          value={profile.allergies}
-          onChange={(v) => set('allergies', v)} />
-        
-        <PrefRadio
-          label="Pregnant or trying to conceive?"
-          value={profile.pregnant}
-          onChange={(v) => set('pregnant', v)}
-          options={[
-          { value: 'no', label: 'No' },
-          { value: 'yes', label: 'Yes' },
-          { value: 'trying', label: 'Trying' },
-          { value: 'na', label: 'Prefer not to say' }]
-          } />
-        
-      </PrefSection>
-
-      <div className="prefs__footer">
-        <div className="prefs__footer-note">
-          Visible only to you. Used to personalize search results; never sold or shared.
-        </div>
-        <div className="prefs__footer-actions">
-          <button className="prefs__btn-secondary" onClick={onCancel}>Cancel</button>
-          <button className="prefs__btn-primary" onClick={() => onSave(profile)}>
-            <span>{Icon.Check()}</span>
-            <span>Save profile</span>
-          </button>
-        </div>
-      </div>
-    </div>);
-
-}
-
-function PrefSection({ title, num, children }) {
-  return (
-    <section className="prefs__section">
-      <header className="prefs__section-head">
-        <span className="prefs__section-num">{num}</span>
-        <h2 className="prefs__section-title">{title}</h2>
-      </header>
-      <div className="prefs__section-body">
-        {children}
-      </div>
-    </section>);
-
-}
-
-function PrefRow({ children }) {
-  return <div className="prefs__row">{children}</div>;
-}
-
-function PrefField({ label, value, onChange, placeholder, hint, textarea, grow }) {
-  return (
-    <label className={'prefs__field' + (grow ? ' prefs__field--grow' : '')}>
-      <span className="prefs__field-label">{label}</span>
-      {textarea ?
-      <textarea
-        className="prefs__input prefs__input--textarea"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={2} /> :
-
-
-      <input
-        className="prefs__input"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder} />
-
-      }
-      {hint && <span className="prefs__field-hint">{hint}</span>}
-    </label>);
-
-}
-
-function PrefRadio({ label, value, onChange, options }) {
-  return (
-    <div className="prefs__field">
-      <span className="prefs__field-label">{label}</span>
-      <div className="prefs__radio-row">
-        {options.map((o) =>
-        <button
-          key={o.value}
-          type="button"
-          className={'prefs__radio' + (value === o.value ? ' prefs__radio--active' : '')}
-          onClick={() => onChange(o.value)}>
-            {o.label}
-          </button>
-        )}
-      </div>
-    </div>);
-
-}
-
-function PrefChips({ label, values, onToggle, options }) {
-  return (
-    <div className="prefs__field">
-      <span className="prefs__field-label">{label}</span>
-      <div className="prefs__chip-row">
-        {options.map((o) =>
-        <button
-          key={o}
-          type="button"
-          className={'prefs__chip' + (values.includes(o) ? ' prefs__chip--active' : '')}
-          onClick={() => onToggle(o)}>
-            {values.includes(o) && <span className="prefs__chip-check">{Icon.Check()}</span>}
-            <span>{o}</span>
-          </button>
-        )}
       </div>
     </div>);
 
@@ -972,6 +766,7 @@ function App() {
     setActiveTab(null);
     setTabsDocked(false);
     if (id === 'check-symptoms') setAgent('check-symptoms');else
+    if (id === 'care-profile') setAgent('care-profile');else
     if (id === 'preferences') setAgent('preferences');else
     if (id === 'settings') setAgent('settings');else
     if (id === 'find-care') {
@@ -1076,14 +871,17 @@ function App() {
             onAsk={(q) => {setAgent(null);ask(q);}} />
 
           }
+          {!hasMessages && agent === 'care-profile' &&
+          <window.CareProfile onDone={() => setAgent(null)} />
+          }
           {!hasMessages && agent === 'preferences' &&
-          <SearchPreferences
+          <window.SearchPreferences
             onSave={() => setAgent(null)}
             onCancel={() => setAgent(null)} />
 
           }
           {!hasMessages && agent === 'settings' &&
-          <SearchPreferences
+          <window.SearchPreferences
             onSave={() => setAgent(null)}
             onCancel={() => setAgent(null)} />
 
@@ -1157,6 +955,7 @@ function App() {
           
           </window.TweakSection>
           <window.TweakSection title="Try a screen">
+            <window.TweakButton label="Care profile" onClick={() => pickAgent('care-profile')} />
             <window.TweakButton label="Search preferences" onClick={() => pickAgent('preferences')} />
             <window.TweakButton label="Check symptoms" onClick={() => pickAgent('check-symptoms')} />
             <window.TweakButton label="Ask: Lower back pain" onClick={() => {newConv();setTimeout(() => ask('What causes lower back pain?'), 80);}} />
