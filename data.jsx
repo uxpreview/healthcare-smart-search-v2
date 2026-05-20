@@ -660,16 +660,100 @@ const URGENT_CARE = {
 };
 
 /* ============================================================ */
-/* === COLONOSCOPY: timeline / step-by-step =================== */
+/* === COLONOSCOPY: prep timeline ============================= */
 /* ============================================================ */
+
+function ColonoscopyInstructions() {
+  return (
+    <div className="instr-cards">
+      <div className="instr-card instr-card--warn">
+        <div className="instr-card__title">Foods to avoid</div>
+        <div className="instr-card__body">
+          <ul className="instr-card__list">
+            <li>Nuts and seeds</li>
+            <li>Raw fruits and vegetables</li>
+            <li>Whole grains</li>
+            <li>Corn, beans, popcorn</li>
+            <li>Red or purple liquids</li>
+            <li>Alcohol</li>
+          </ul>
+        </div>
+      </div>
+      <div className="instr-card">
+        <div className="instr-card__title">Clear liquids you can usually have (1 day before)</div>
+        <div className="instr-card__body">
+          <ul className="instr-card__list">
+            <li>Water</li>
+            <li>Clear broth</li>
+            <li>Apple juice or white grape juice</li>
+            <li>Plain coffee or tea without milk</li>
+            <li>Gelatin</li>
+            <li>Popsicles without red or purple dye</li>
+          </ul>
+        </div>
+      </div>
+      <div className="instr-card">
+        <div className="instr-card__title">Medications to ask about</div>
+        <div className="instr-card__body">
+          <p className="instr-card__prose">Ask your doctor before changing any medication. Blood thinners, diabetes medications, iron supplements, and some anti-inflammatory medicines may need special instructions.</p>
+        </div>
+      </div>
+      <div className="instr-card instr-card--alert">
+        <div className="instr-card__title">Call your clinic if</div>
+        <div className="instr-card__body">
+          <ul className="instr-card__list">
+            <li>You cannot finish the prep solution</li>
+            <li>You vomit repeatedly</li>
+            <li>Your stool is not clear by procedure morning</li>
+            <li>You accidentally ate solid food after starting clear liquids</li>
+            <li>You do not have someone to drive you home</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ColonoscopyLocs() {
+  const locs = [
+    { name: '[System] Midtown Endoscopy Center',    dist: '0.8 mi', address: '245 W 38th St', checkin: '6th floor',   parking: 'Parking available',     phone: '(212) 555-0132' },
+    { name: '[System] West Side Gastroenterology',  dist: '1.6 mi', address: '410 W 57th St', checkin: 'Suite 300',   parking: 'Garage parking nearby', phone: '(212) 555-0174' },
+    { name: '[System] Downtown Endoscopy',          dist: '2.3 mi', address: '60 Hudson St',  checkin: 'Main lobby',  parking: 'Valet available',        phone: '(212) 555-0189' },
+  ];
+  return (
+    <>
+      <div className="proc-locs">
+        {locs.map((loc, i) => (
+          <div className="proc-loc" key={i}>
+            <div className="proc-loc__main">
+              <div className="proc-loc__name">{loc.name}</div>
+              <div className="proc-loc__meta">
+                <div className="meta-row">{Icon.MapPin()}<span>{loc.dist} · {loc.address}</span></div>
+                <div className="meta-row">{Icon.Info()}<span>Check in: {loc.checkin}</span></div>
+                <div className="meta-row">{Icon.Info()}<span>{loc.parking}</span></div>
+                <div className="meta-row">{Icon.Phone()}<span>{loc.phone}</span></div>
+              </div>
+            </div>
+            <div className="proc-loc__actions">
+              <button className="btn btn--primary">Get directions</button>
+              <button className="btn">Call location</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="proc-loc__note">Confirm your exact arrival time and location in your appointment instructions.</p>
+    </>
+  );
+}
+
 const COLONOSCOPY = {
   query: "How do I prepare for a colonoscopy?",
   chatLabel: "Colonoscopy prep",
   tabs: [
-    { id: 'pages', label: 'Pages', icon: 'FileText', count: 5 },
-    { id: 'appointments', label: 'Appointments', icon: 'Calendar', count: 3 },
-    { id: 'doctors', label: 'Doctors', icon: 'Stethoscope', count: 4 },
-    { id: 'services', label: 'Services', icon: 'Video', count: 3 },
+    { id: 'timeline',     label: 'Timeline',     icon: 'Calendar', count: 6, confidence: 'high' },
+    { id: 'instructions', label: 'Instructions', icon: 'BookOpen', count: 4, confidence: 'high' },
+    { id: 'locations',    label: 'Locations',    icon: 'MapPin',   count: 3, confidence: 'high' },
+    { id: 'pages',        label: 'Pages',        icon: 'FileText', count: 5, confidence: 'high' },
   ],
   summary: [
     { text: "Preparation takes about " },
@@ -681,50 +765,60 @@ const COLONOSCOPY = {
   sections: [
     {
       id: 'timeline',
-      tab: 'pages',
+      tab: 'timeline',
       title: 'Your prep timeline',
       body: () => (
         <window.TimelineStepper steps={[
           {
             when: '7 days before',
             title: 'Pick up your prep kit',
-            detail: 'Your prep kit (laxative solution + clear-liquid guide) will be at your [System] pharmacy. Tell your doctor about all medications — some need to be paused.',
-            list: ['Stop iron supplements', 'Pause NSAIDs (ibuprofen, aspirin) if your doctor approves', 'Confirm a ride home — you cannot drive after sedation'],
+            detail: 'Your prep kit, laxative solution, and clear-liquid guide will be available at your [System] pharmacy. Tell your doctor about all medications — some may need to be paused.',
+            list: [
+              'Stop iron supplements',
+              'Pause NSAIDs, such as ibuprofen or aspirin, only if your doctor approves',
+              'Confirm a ride home — you cannot drive after sedation',
+            ],
           },
           {
             when: '3 days before',
-            title: 'Switch to low-fiber diet',
+            title: 'Switch to a low-fiber diet',
             detail: 'Avoid nuts, seeds, raw fruits and vegetables, whole grains, and red meat.',
-            list: ['OK: white rice, plain pasta, eggs, chicken, fish, white bread', 'Avoid: salads, popcorn, corn, beans, brown rice, anything with seeds'],
+            list: [
+              'OK: white rice, plain pasta, eggs, chicken, fish, white bread',
+              'Avoid: salads, popcorn, corn, beans, brown rice, anything with seeds',
+            ],
           },
           {
             when: '1 day before',
             title: 'Clear liquids only',
-            detail: 'Starting the morning before your procedure, drink only clear liquids: water, broth, plain coffee or tea (no milk), clear juice (no pulp), gelatin, popsicles. Avoid red or purple — they can look like blood on the scope.',
+            detail: 'Starting the morning before your procedure, drink only clear liquids: water, broth, plain coffee or tea without milk, clear juice with no pulp, gelatin, and popsicles. Avoid red or purple liquids because they can look like blood during the procedure.',
           },
           {
             when: 'Evening before',
             title: 'Start the prep solution',
-            detail: 'Drink half of your prescribed laxative solution per your instructions (usually 6–8 PM). Stay near a bathroom — bowel movements typically start within 1–3 hours.',
-            list: ['Refrigerate the solution beforehand — it tastes better cold', 'Use a straw to bypass taste buds', 'Sip steadily, not all at once'],
+            detail: 'Drink half of your prescribed laxative solution according to your instructions, usually between 6–8 PM. Stay near a bathroom — bowel movements typically start within 1–3 hours.',
+            list: [
+              'Refrigerate the solution beforehand — it tastes better cold',
+              'Use a straw to bypass taste buds',
+              'Sip steadily, not all at once',
+            ],
           },
           {
             when: 'Morning of',
-            title: 'Finish prep, stop drinking 2h before',
-            detail: 'Finish the second half of your prep ~5 hours before the procedure. Stop all liquids 2 hours before. Wear loose, comfortable clothing.',
-            danger: false,
+            title: 'Finish prep, then stop drinking 2 hours before',
+            detail: 'Finish the second half of your prep about 5 hours before the procedure. Stop all liquids 2 hours before. Wear loose, comfortable clothing.',
           },
           {
             when: 'After',
-            title: 'Recovery & getting home',
-            detail: 'You\'ll need someone to drive you home — sedation effects last hours. Rest for the day. You can usually eat normally that evening. Some bloating and gas is normal.',
+            title: 'Recovery and getting home',
+            detail: "You'll need someone to drive you home because sedation effects can last for hours. Rest for the day. You can usually eat normally that evening. Some bloating and gas are normal.",
           },
         ]} />
       ),
     },
     {
       id: 'questions',
-      tab: 'pages',
+      tab: 'timeline',
       title: 'Questions to ask your doctor',
       body: () => (
         <ul className="bullet-list">
@@ -743,17 +837,73 @@ const COLONOSCOPY = {
         </ul>
       ),
     },
+    {
+      id: 'instructions',
+      tab: 'instructions',
+      title: 'Prep instructions',
+      body: () => <ColonoscopyInstructions />,
+    },
+    {
+      id: 'proc-locations',
+      tab: 'locations',
+      title: 'Colonoscopy locations',
+      body: () => <ColonoscopyLocs />,
+    },
+    {
+      id: 'pages-results',
+      tab: 'pages',
+      title: 'Related pages',
+      body: () => (
+        <window.PageResults items={[
+          {
+            kind: 'Patient instructions',
+            url: '/learn/colonoscopy-prep',
+            title: 'Colonoscopy preparation instructions',
+            snippet: 'Step-by-step instructions for diet changes, clear liquids, bowel prep, and what to expect before your procedure.',
+            meta: ['Clinician-reviewed', 'Patient instructions'],
+          },
+          {
+            kind: 'Procedure',
+            url: '/learn/colonoscopy',
+            title: 'Colonoscopy',
+            snippet: 'Learn why colonoscopies are done, what the procedure involves, and how results are shared.',
+            meta: ['Clinician-reviewed'],
+          },
+          {
+            kind: 'Locations',
+            url: '/locations/endoscopy',
+            title: 'Endoscopy locations',
+            snippet: 'Find [System] endoscopy centers, addresses, parking details, and phone numbers.',
+            meta: ['Directory', '3 locations'],
+          },
+          {
+            kind: 'Patient education',
+            url: '/learn/sedation-anesthesia',
+            title: 'Anesthesia and sedation',
+            snippet: 'Learn what to expect from sedation, why you need a ride home, and how long recovery may take.',
+            meta: ['Clinician-reviewed'],
+          },
+          {
+            kind: 'Billing and insurance',
+            url: '/billing/procedures',
+            title: 'Billing and insurance for procedures',
+            snippet: 'Review coverage, estimates, and billing information for outpatient procedures.',
+            meta: ['Updated Jan 2026'],
+          },
+        ]} />
+      ),
+    },
   ],
   sources: [
-    { num: 1, fav: 'S', name: '[System] GI Department', title: 'Colonoscopy — how to prepare', date: 'Jan 2026', url: '#' },
-    { num: 2, fav: 'S', name: '[System] GI Department', title: 'Patient prep instructions (PDF)', date: 'Apr 2026', url: '#' },
-    { num: 3, fav: 'S', name: '[System] Gastroenterology', title: 'Bowel prep quality — clinical guide', date: 'Sep 2025', url: '#' },
+    { num: 1, fav: 'S', name: '[System] GI Department',  title: 'Patient instructions reviewed by [System] gastroenterology team', date: 'Jan 2026', url: '#' },
+    { num: 2, fav: 'S', name: '[System] GI Department',  title: 'Procedure preparation guidance from [System] endoscopy instructions', date: 'Apr 2026', url: '#' },
+    { num: 3, fav: 'S', name: '[System] Endoscopy',      title: 'Location data from [System] endoscopy directory', date: 'May 2026', url: '#' },
+    { num: 4, fav: 'S', name: '[System] Billing',        title: 'Billing information from [System] patient financial services', date: 'Feb 2026', url: '#' },
   ],
   followups: [
     "What if I can't finish the prep solution?",
     "Can I have coffee the morning of?",
     "How long does the procedure take?",
-    "Find a GI doctor at [System]",
   ],
 };
 
