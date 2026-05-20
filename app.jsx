@@ -298,142 +298,148 @@ function RailLockedItem({ icon, label, title, desc, onSignIn }) {
 
 /* === Left rail === */
 function LeftRail({ history, onNewConv, onPickHistory, collapsed, onToggleCollapsed, onPickAgent, loggedIn, onSetLoggedIn, onOpenAuth, userMenuOpen, onToggleMenu, onCloseMenu }) {
-  if (collapsed) {
-    return (
-      <aside className="rail rail--collapsed">
-        <button className="rail__logo-collapsed" title="Ask [System] — Home" onClick={onNewConv}><AlmaMark /></button>
-        <button className="rail__icon-btn rail__icon-btn--solo" title="Expand sidebar" onClick={onToggleCollapsed}>
+  return (
+    <aside className={'rail' + (collapsed ? ' rail--collapsed' : '')}>
+
+      {/* Brand / logo row */}
+      <button className="rail__brand" onClick={onNewConv} title="Home">
+        <span className="rail__brand-mark"><AlmaMark /></span>
+        <span className="rail__text">Ask [System]</span>
+      </button>
+
+      {/* Toggle row — separate from brand */}
+      <div className="rail__toggle">
+        <button className="rail__icon-btn" title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={onToggleCollapsed}>
           {Icon.Sidebar()}
         </button>
-        <div className="rail__collapsed-divider"></div>
-        <button className="rail__icon-btn rail__icon-btn--solo" title="New chat" onClick={onNewConv}>{Icon.NewChat()}</button>
-        {loggedIn && <button className="rail__icon-btn rail__icon-btn--solo" title="Saved">{Icon.Bookmark()}</button>}
-        {loggedIn && <button className="rail__icon-btn rail__icon-btn--solo" title="Projects">{Icon.Folder()}</button>}
-        <div className="rail__collapsed-divider"></div>
-        {PRIMARY_NAV.filter((n) => loggedIn || !n.requiresAuth).map((n, i) =>
-        <button
-          key={i}
-          className="rail__icon-btn rail__icon-btn--solo"
-          title={n.label}
-          onClick={() => n.kind === 'agent' ? onPickAgent(n.id) : n.query && onPickHistory(n.query)}>
-            {Icon[n.icon]()}
-          </button>
-        )}
-        <div style={{ flex: 1 }}></div>
-        {loggedIn ?
-        <div className="rail__user-avatar" title="Ryan McCarty" onClick={onToggleCollapsed} style={{ cursor: 'pointer' }}>RM</div> :
-        <button className="rail__icon-btn rail__icon-btn--solo" title="Log in" onClick={onOpenAuth}>{Icon.Person()}</button>
-        }
-      </aside>);
-
-  }
-  return (
-    <aside className="rail">
-      <div className="rail__header">
-        <button className="rail__brand" onClick={onNewConv} title="Home">
-          <span className="rail__brand-mark"><AlmaMark /></span>
-          <span>Ask [System]</span>
-        </button>
-        <div className="rail__header-actions">
-          <button className="rail__icon-btn" title="Collapse sidebar" onClick={onToggleCollapsed}>{Icon.Sidebar()}</button>
-        </div>
       </div>
 
+      {/* Nav section — New chat, Saved, Projects */}
       <div className="rail__section">
         <button className="rail__item" onClick={onNewConv}>
           <span className="rail__item-icon">{Icon.NewChat()}</span>
-          <span>New chat</span>
+          <span className="rail__text">New chat</span>
         </button>
-        {loggedIn ?
-        <>
+        {loggedIn ? (
+          <>
             <button className="rail__item">
               <span className="rail__item-icon">{Icon.Bookmark()}</span>
-              <span>Saved</span>
+              <span className="rail__text">Saved</span>
             </button>
             <button className="rail__item">
               <span className="rail__item-icon">{Icon.Folder()}</span>
-              <span>Projects</span>
+              <span className="rail__text">Projects</span>
               <span className="rail__item-trail">{Icon.PlusCircle()}</span>
             </button>
-          </> :
-
-        <>
-            <RailLockedItem
-            icon="Bookmark" label="Saved"
-            title="Save anything you find"
-            desc="Bookmark doctors, visits, and answers to revisit them later."
-            onSignIn={onOpenAuth} />
-            <RailLockedItem
-            icon="Folder" label="Projects"
-            title="Organize care by project"
-            desc="Group chats by condition, family member, or upcoming visit."
-            onSignIn={onOpenAuth} />
           </>
-        }
+        ) : collapsed ? (
+          <>
+            <button className="rail__item" title="Saved" onClick={onOpenAuth}>
+              <span className="rail__item-icon">{Icon.Bookmark()}</span>
+              <span className="rail__text">Saved</span>
+            </button>
+            <button className="rail__item" title="Projects" onClick={onOpenAuth}>
+              <span className="rail__item-icon">{Icon.Folder()}</span>
+              <span className="rail__text">Projects</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <RailLockedItem
+              icon="Bookmark" label="Saved"
+              title="Save anything you find"
+              desc="Bookmark doctors, visits, and answers to revisit them later."
+              onSignIn={onOpenAuth} />
+            <RailLockedItem
+              icon="Folder" label="Projects"
+              title="Organize care by project"
+              desc="Group chats by condition, family member, or upcoming visit."
+              onSignIn={onOpenAuth} />
+          </>
+        )}
       </div>
 
       <div className="rail__divider"></div>
 
+      {/* Agents section */}
       <div className="rail__section">
-        <div className="rail__label">Agents</div>
+        <div className="rail__label rail__section-head">Agents</div>
         {PRIMARY_NAV.map((n, i) => {
           if (n.requiresAuth && !loggedIn) {
+            if (collapsed) {
+              return (
+                <button key={i} className="rail__item" title={n.label} onClick={onOpenAuth}>
+                  <span className="rail__item-icon">{Icon[n.icon]()}</span>
+                  <span className="rail__text">{n.label}</span>
+                </button>
+              );
+            }
             return (
               <RailLockedItem
                 key={i} icon={n.icon} label={n.label}
                 title={n.promo?.title || `Log in to use ${n.label}`}
                 desc={n.promo?.desc || 'Sign up to unlock this agent.'}
-                onSignIn={onOpenAuth} />);
-
+                onSignIn={onOpenAuth} />
+            );
           }
           return (
             <button
               key={i}
               className="rail__item"
+              title={n.label}
               onClick={() => n.kind === 'agent' ? onPickAgent(n.id) : n.query && onPickHistory(n.query)}>
               <span className="rail__item-icon">{Icon[n.icon]()}</span>
-              <span>{n.label}</span>
-            </button>);
-
+              <span className="rail__text">{n.label}</span>
+            </button>
+          );
         })}
       </div>
 
       <div className="rail__divider"></div>
 
-      {loggedIn &&
-      <div className="rail__section">
-          <div className="rail__label">Recent</div>
-          {history.map((h) =>
-        <button
-          key={h.id}
-          className={'rail__recent' + (h.active ? ' rail__recent--active' : '')}
-          onClick={() => onPickHistory(h.query)}>
+      {/* Recent section — hidden when collapsed */}
+      {loggedIn && (
+        <div className="rail__section rail__section--recent">
+          <div className="rail__label rail__section-head">Recent</div>
+          {history.map((h) => (
+            <button
+              key={h.id}
+              className={'rail__recent' + (h.active ? ' rail__recent--active' : '')}
+              onClick={() => onPickHistory(h.query)}>
               <span className="rail__recent-text">{h.q}</span>
               {h.active && <span className="rail__recent-more" onClick={(e) => e.stopPropagation()}>{Icon.MoreHorizontal()}</span>}
             </button>
-        )}
+          ))}
         </div>
-      }
+      )}
 
       <div style={{ flex: 1 }}></div>
 
-      {!loggedIn &&
-      <div className="signin-callout">
-          <div className="signin-callout__title">Save your chats</div>
-          <div className="signin-callout__desc">
-            Log in to get personalized recommendations, save your care profile, and revisit past conversations.
+      {/* Logged-out: callout (expanded) or login button (collapsed) */}
+      {!loggedIn && (
+        <>
+          <div className="signin-callout">
+            <div className="signin-callout__title">Save your chats</div>
+            <div className="signin-callout__desc">
+              Log in to get personalized recommendations, save your care profile, and revisit past conversations.
+            </div>
+            <div className="signin-callout__actions">
+              <button className="signin-callout__primary" onClick={onOpenAuth}>Log in</button>
+              <button className="signin-callout__secondary" onClick={onOpenAuth}>Sign up</button>
+            </div>
           </div>
-          <div className="signin-callout__actions">
-            <button className="signin-callout__primary" onClick={onOpenAuth}>Log in</button>
-            <button className="signin-callout__secondary" onClick={onOpenAuth}>Sign up</button>
-          </div>
-        </div>
-      }
+          <button className="rail__item rail__item--login" title="Log in" onClick={onOpenAuth}>
+            <span className="rail__item-icon">{Icon.Person()}</span>
+            <span className="rail__text">Log in</span>
+          </button>
+        </>
+      )}
 
-      {loggedIn &&
-      <div className="rail__user-wrap">
-          {userMenuOpen &&
-        <div className="user-menu">
+      {/* Logged-in: user row */}
+      {loggedIn && (
+        <div className="rail__user-wrap">
+          {userMenuOpen && (
+            <div className="user-menu">
               <button className="user-menu__item" onClick={() => {onCloseMenu();onPickAgent('care-profile');}}>
                 <span className="user-menu__icon">{Icon.Person()}</span>
                 <span>Care profile</span>
@@ -457,7 +463,7 @@ function LeftRail({ history, onNewConv, onPickHistory, collapsed, onToggleCollap
                 <span>Log out</span>
               </button>
             </div>
-        }
+          )}
           <div className={'rail__user' + (userMenuOpen ? ' rail__user--open' : '')} onClick={onToggleMenu}>
             <div className="rail__user-avatar">RM</div>
             <div className="rail__user-text">
@@ -467,9 +473,9 @@ function LeftRail({ history, onNewConv, onPickHistory, collapsed, onToggleCollap
             <button className="rail__user-action">{Icon.ChevronUpDown()}</button>
           </div>
         </div>
-      }
-    </aside>);
-
+      )}
+    </aside>
+  );
 }
 
 /* === Main header (Search ⌄ left) === */
