@@ -13,9 +13,11 @@ const QUICK_CHIPS = [
 
 /* Recommended searches shown when input is focused and empty */
 const RECOMMENDATIONS = [
-  { group: 'Common searches', items: ['Urgent care open right now', 'Primary care options near me', 'Does my plan cover physical therapy?', 'Colonoscopy prep timeline'] },
-  { group: 'Specialty care',  items: ['Neurology care for migraines', 'Cancer care second opinion', 'Cardiology appointment near me'] },
-  { group: 'Patient tasks',   items: ['Find a doctor who accepts [Plan] PPO', 'What symptoms mean I should go to the ER?', 'Schedule an imaging appointment'] },
+  'Urgent care open right now',
+  'Primary care options near me',
+  'Chest pain and shortness of breath',
+  'Colonoscopy prep timeline',
+  'Physical therapy coverage',
 ];
 
 /* Predictive suggestions keyed by typed prefix */
@@ -34,11 +36,14 @@ const DEMO_QUERIES = new Set(['Urgent care open right now', 'Chest pain and shor
 function getSuggestions(text) {
   const t = text.toLowerCase().trim();
   if (!t) return null;
-  if (t.startsWith('chest')) return SUGGESTIONS_MAP.chest;
-  if (t.startsWith('colo')) return SUGGESTIONS_MAP.colo;
-  if (t === 'pt' || t.startsWith('pt ') || t.startsWith('physical')) return SUGGESTIONS_MAP.physical;
-  if (t.startsWith('primary')) return SUGGESTIONS_MAP.primary;
-  if (t.startsWith('urgent')) return SUGGESTIONS_MAP.urgent;
+  // "pt" is a two-char special case; all others require 3+ chars
+  if (t === 'pt' || t.startsWith('pt ')) return SUGGESTIONS_MAP.physical;
+  if (t.length < 3) return null;
+  if (t.startsWith('che')) return SUGGESTIONS_MAP.chest;
+  if (t.startsWith('col')) return SUGGESTIONS_MAP.colo;
+  if (t.startsWith('phy')) return SUGGESTIONS_MAP.physical;
+  if (t.startsWith('pri')) return SUGGESTIONS_MAP.primary;
+  if (t.startsWith('urg')) return SUGGESTIONS_MAP.urgent;
   return [];
 }
 
@@ -156,17 +161,11 @@ function SearchPanel({ draft, onSelect, onFillDraft }) {
   return (
     <div className="search-panel">
       <div className="search-panel__heading">Recommended searches</div>
-      {RECOMMENDATIONS.map((group, gi) => (
-        <React.Fragment key={gi}>
-          {gi > 0 && <div className="search-panel__divider" />}
-          <div className="search-panel__group">{group.group}</div>
-          {group.items.map((s, i) => (
-            <button key={i} className="search-panel__item" onMouseDown={(e) => pick(e, s)}>
-              <span className="search-panel__item-icon">{Icon.Search()}</span>
-              <span className="search-panel__item-text">{s}</span>
-            </button>
-          ))}
-        </React.Fragment>
+      {RECOMMENDATIONS.map((s, i) => (
+        <button key={i} className="search-panel__item" onMouseDown={(e) => pick(e, s)}>
+          <span className="search-panel__item-icon">{Icon.Search()}</span>
+          <span className="search-panel__item-text">{s}</span>
+        </button>
       ))}
     </div>
   );
@@ -174,7 +173,17 @@ function SearchPanel({ draft, onSelect, onFillDraft }) {
 
 /* === Landing state === */
 function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
-  const [focused, setFocused] = useS(true);
+  const [focused, setFocused] = useS(false);
+  const wrapRef = useR(null);
+
+  // onClick fires only on real user interaction, never on programmatic .focus()
+  const handleOpen = () => setFocused(true);
+  const handleBlur = (e) => {
+    // Keep panel open if focus moves to another element within the wrapper
+    if (wrapRef.current && wrapRef.current.contains(e.relatedTarget)) return;
+    setFocused(false);
+  };
+
   const showPanel = focused;
 
   return (
@@ -189,13 +198,11 @@ function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
         </button>
       }
       <h1 className="landing__title">How can we help you feel better?</h1>
-      <div className="landing__input">
+      <div className="landing__input" ref={wrapRef} onClick={handleOpen} onBlur={handleBlur}>
         <InputBar
           value={draft}
           onChange={setDraft}
           onSubmit={onAsk}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           large
           autoFocus
           placeholder="Ask about a symptom, doctor, or visit type…" />
