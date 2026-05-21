@@ -3,24 +3,18 @@ const Icon = window.Icon;
 const Message = window.AlmaMessage;
 const { useState: useS, useEffect: useE, useRef: useR, useCallback } = React;
 
-/* Quick-action chips below the input */
-const QUICK_CHIPS = [
-  { text: 'Primary care near me',                query: 'Primary care options near me' },
-  { text: 'Cancer care second opinion',           query: 'Cancer care second opinion' },
-  { text: 'Orthopedic care for knee pain',        query: 'Orthopedic care for knee pain' },
-  { text: 'Urgent care open now',                 query: 'Urgent care open right now' },
-  { text: 'Does my plan cover physical therapy?', query: 'Physical therapy coverage' },
-  { text: 'Prepare for a colonoscopy',            query: 'Colonoscopy prep timeline' },
+/* Animated placeholder texts (cycles when unfocused and empty) */
+const PLACEHOLDER_TEXTS = [
+  "Try 'cardiologist accepting new patients near me'",
+  "Try 'urgent care open now'",
+  "Try 'schedule primary care visit today'",
 ];
 
-/* Recommended searches shown when input is focused and empty */
+/* Focused-empty suggestions (exactly 3, no heading) */
 const RECOMMENDATIONS = [
   'Primary care options near me',
-  'Cancer care second opinion',
-  'Orthopedic care for knee pain',
-  'Urgent care open right now',
-  'Physical therapy coverage',
-  'Colonoscopy prep timeline',
+  'Does my plan cover physical therapy?',
+  'How do I prepare for a colonoscopy?',
 ];
 
 /* Predictive suggestions keyed by typed prefix */
@@ -83,8 +77,10 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
   const [mode, setMode] = useS('Quick');
   const [modeOpen, setModeOpen] = useS(false);
   const modeRef = useR(null);
-  // Suppress the onFocus callback when focus is set programmatically (autoFocus)
   const suppressNextFocus = useR(false);
+  const [taFocused, setTaFocused] = useS(false);
+  const [phIdx, setPhIdx] = useS(0);
+  const [phVisible, setPhVisible] = useS(true);
 
   useE(() => {
     if (ta.current) {
@@ -107,6 +103,24 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
     return () => document.removeEventListener('mousedown', close);
   }, [modeOpen]);
 
+  // Animated placeholder — only on landing (large), unfocused, empty
+  useE(() => {
+    if (!large || taFocused || value) return;
+    setPhVisible(true);
+    let cancelled = false;
+    const timer = setInterval(() => {
+      setPhVisible(false);
+      setTimeout(() => {
+        if (cancelled) return;
+        setPhIdx(i => (i + 1) % PLACEHOLDER_TEXTS.length);
+        setPhVisible(true);
+      }, 300);
+    }, 3000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [large, taFocused, value]);
+
+  const showAnimPh = large && !taFocused && !value;
+
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -115,20 +129,32 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
   };
   const handleTextareaFocus = () => {
     if (suppressNextFocus.current) { suppressNextFocus.current = false; return; }
+    setTaFocused(true);
     if (onFocus) onFocus();
+  };
+  const handleTextareaBlur = (e) => {
+    setTaFocused(false);
+    if (onBlur) onBlur(e);
   };
   return (
     <div className={'input-shell' + (large ? ' input-shell--large' : '')}>
-      <textarea
-        ref={ta}
-        className="input__textarea"
-        placeholder={placeholder || 'Search doctors, locations, services, symptoms, or questions…'}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKey}
-        onFocus={handleTextareaFocus}
-        onBlur={onBlur}
-        rows={1} />
+      <div className="input__textarea-wrap">
+        <textarea
+          ref={ta}
+          className="input__textarea"
+          placeholder={showAnimPh ? '' : (placeholder || 'Search doctors, locations, services, symptoms, or questions…')}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKey}
+          onFocus={handleTextareaFocus}
+          onBlur={handleTextareaBlur}
+          rows={1} />
+        {showAnimPh && (
+          <div className="input__ph-anim" style={{ opacity: phVisible ? 1 : 0 }}>
+            {PLACEHOLDER_TEXTS[phIdx]}
+          </div>
+        )}
+      </div>
 
       <div className="input__row">
         <div className="input__tools">
@@ -211,8 +237,7 @@ function SearchPanel({ draft, onSelect, onFillDraft }) {
   }
 
   return (
-    <div className="search-panel">
-      <div className="search-panel__heading">Recommended searches</div>
+    <div className="search-panel search-panel--minimal">
       {RECOMMENDATIONS.map((s, i) => (
         <button key={i} className="search-panel__item" onMouseDown={(e) => pick(e, s)}>
           <span className="search-panel__item-icon">{Icon.Search()}</span>
@@ -266,15 +291,6 @@ function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
             onFillDraft={(q) => setDraft(q)} />
         )}
       </div>
-      {!showPanel && (
-        <div className="quick-chips">
-          {QUICK_CHIPS.map((c, i) =>
-            <button key={i} className="quick-chip" onClick={() => onAsk(c.query)}>
-              {c.text}
-            </button>
-          )}
-        </div>
-      )}
     </div>);
 
 }
