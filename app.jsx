@@ -5,9 +5,9 @@ const { useState: useS, useEffect: useE, useRef: useR, useCallback } = React;
 
 /* Animated placeholder texts (cycles when unfocused and empty) */
 const PLACEHOLDER_TEXTS = [
-  "Try 'cardiologist accepting new patients near me'",
-  "Try 'urgent care open now'",
-  "Try 'schedule primary care visit today'",
+  'cardiologist accepting new patients near me',
+  'urgent care open now',
+  'schedule primary care visit today',
 ];
 
 /* Focused-empty suggestions (exactly 3, no heading) */
@@ -115,7 +115,7 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
         setPhIdx(i => (i + 1) % PLACEHOLDER_TEXTS.length);
         setPhVisible(true);
       }, 300);
-    }, 3000);
+    }, 5000);
     return () => { cancelled = true; clearInterval(timer); };
   }, [large, taFocused, value]);
 
