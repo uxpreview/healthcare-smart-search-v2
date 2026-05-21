@@ -11,6 +11,37 @@ const QUICK_CHIPS = [
 { icon: 'StethY', text: 'Physician Finder', query: 'Find a primary care doctor near me' }];
 
 
+/* Recommended searches shown when input is focused and empty */
+const RECOMMENDATIONS = [
+  { group: 'Common searches', items: ['Urgent care open right now', 'Primary care options near me', 'Does my plan cover physical therapy?', 'Colonoscopy prep timeline'] },
+  { group: 'Specialty care',  items: ['Neurology care for migraines', 'Cancer care second opinion', 'Cardiology appointment near me'] },
+  { group: 'Patient tasks',   items: ['Find a doctor who accepts [Plan] PPO', 'What symptoms mean I should go to the ER?', 'Schedule an imaging appointment'] },
+];
+
+/* Predictive suggestions keyed by typed prefix */
+const SUGGESTIONS_MAP = {
+  chest:    ['Chest pain and shortness of breath', 'Chest pain symptoms', 'Heart attack warning signs', 'Emergency departments near me'],
+  colo:     ['Colonoscopy prep timeline', 'Colonoscopy preparation instructions', 'Endoscopy locations', 'Can I have coffee before a colonoscopy?'],
+  physical: ['Physical therapy coverage', 'Physical therapy locations near me', 'Find in-network PT providers', 'Do I need a referral for physical therapy?'],
+  pt:       ['Physical therapy coverage', 'Physical therapy locations near me', 'Find in-network PT providers', 'Do I need a referral for physical therapy?'],
+  primary:  ['Primary care options near me', 'Find a primary care doctor', 'Primary care doctors accepting new patients', 'Family medicine vs. internal medicine'],
+  urgent:   ['Urgent care open right now', 'Urgent care near me', 'Urgent care vs. emergency room', 'Find pediatric urgent care'],
+};
+
+/* The five established demo chats navigable from search */
+const DEMO_QUERIES = new Set(['Urgent care open right now', 'Chest pain and shortness of breath', 'Primary care options near me', 'Colonoscopy prep timeline', 'Physical therapy coverage']);
+
+function getSuggestions(text) {
+  const t = text.toLowerCase().trim();
+  if (!t) return null;
+  if (t.startsWith('chest')) return SUGGESTIONS_MAP.chest;
+  if (t.startsWith('colo')) return SUGGESTIONS_MAP.colo;
+  if (t === 'pt' || t.startsWith('pt ') || t.startsWith('physical')) return SUGGESTIONS_MAP.physical;
+  if (t.startsWith('primary')) return SUGGESTIONS_MAP.primary;
+  if (t.startsWith('urgent')) return SUGGESTIONS_MAP.urgent;
+  return [];
+}
+
 /* Primary nav (the "categories" of search) */
 const PRIMARY_NAV = [
 { id: 'find-care', icon: 'Stethoscope', label: 'Find care', kind: 'agent' },
@@ -29,7 +60,7 @@ const HISTORY = [
 
 
 /* === Input bar === */
-function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus }) {
+function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, onFocus, onBlur }) {
   const ta = useR(null);
   useE(() => {
     if (ta.current) {
@@ -54,6 +85,8 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus }) 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKey}
+        onFocus={onFocus}
+        onBlur={onBlur}
         rows={1} />
       
       <div className="input__row">
@@ -80,8 +113,70 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus }) 
 
 }
 
+/* === Search suggestion / recommendation panel === */
+function SearchPanel({ draft, onSelect, onFillDraft }) {
+  const t = draft.trim();
+  const suggestions = t ? getSuggestions(draft) : null;
+
+  function boldMatch(text, query) {
+    const lo = text.toLowerCase();
+    const q = query.toLowerCase();
+    const idx = q ? lo.indexOf(q) : -1;
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <strong>{text.slice(idx, idx + q.length)}</strong>
+        {text.slice(idx + q.length)}
+      </>
+    );
+  }
+
+  const pick = (e, s) => {
+    e.preventDefault();
+    if (DEMO_QUERIES.has(s)) onSelect(s);
+    else onFillDraft(s);
+  };
+
+  if (t) {
+    if (!suggestions || suggestions.length === 0) return null;
+    return (
+      <div className="search-panel">
+        <div className="search-panel__heading">Suggestions</div>
+        {suggestions.map((s, i) => (
+          <button key={i} className="search-panel__item" onMouseDown={(e) => pick(e, s)}>
+            <span className="search-panel__item-icon">{Icon.Search()}</span>
+            <span className="search-panel__item-text">{boldMatch(s, t)}</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="search-panel">
+      <div className="search-panel__heading">Recommended searches</div>
+      {RECOMMENDATIONS.map((group, gi) => (
+        <React.Fragment key={gi}>
+          {gi > 0 && <div className="search-panel__divider" />}
+          <div className="search-panel__group">{group.group}</div>
+          {group.items.map((s, i) => (
+            <button key={i} className="search-panel__item" onMouseDown={(e) => pick(e, s)}>
+              <span className="search-panel__item-icon">{Icon.Search()}</span>
+              <span className="search-panel__item-text">{s}</span>
+            </button>
+          ))}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 /* === Landing state === */
 function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
+  const [focused, setFocused] = useS(true);
+  const showPanel = focused;
+
   return (
     <div className="landing fade-in">
       {!loggedIn &&
@@ -99,19 +194,28 @@ function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
           value={draft}
           onChange={setDraft}
           onSubmit={onAsk}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           large
           autoFocus
           placeholder="Ask about a symptom, doctor, or visit type…" />
-        
-      </div>
-      <div className="quick-chips">
-        {QUICK_CHIPS.filter((c) => loggedIn || c.text !== 'Appointment Navigator').map((c, i) =>
-        <button key={i} className="quick-chip" onClick={() => onAsk(c.query)}>
-            <span className="quick-chip__icon">{Icon[c.icon]()}</span>
-            <span>{c.text}</span>
-          </button>
+        {showPanel && (
+          <SearchPanel
+            draft={draft}
+            onSelect={(q) => { setFocused(false); onAsk(q); }}
+            onFillDraft={(q) => setDraft(q)} />
         )}
       </div>
+      {!showPanel && (
+        <div className="quick-chips">
+          {QUICK_CHIPS.filter((c) => loggedIn || c.text !== 'Appointment Navigator').map((c, i) =>
+          <button key={i} className="quick-chip" onClick={() => onAsk(c.query)}>
+              <span className="quick-chip__icon">{Icon[c.icon]()}</span>
+              <span>{c.text}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>);
 
 }
