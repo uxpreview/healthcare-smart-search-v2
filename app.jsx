@@ -412,14 +412,12 @@ function LeftRail({ history, onNewConv, onPickHistory, collapsed, onToggleCollap
   return (
     <aside className={'rail' + (collapsed ? ' rail--collapsed' : '')}>
 
-      {/* Brand / logo row */}
-      <button className="rail__brand" onClick={onNewConv} title="Home">
-        <span className="rail__brand-mark"><AlmaMark /></span>
-        <span className="rail__text">Ask [System]</span>
-      </button>
-
-      {/* Toggle row — separate from brand */}
-      <div className="rail__toggle">
+      {/* Header: brand + collapse control on same row (expanded); stacked column (collapsed) */}
+      <div className="rail__header">
+        <button className="rail__brand" onClick={onNewConv} title="Home">
+          <span className="rail__brand-mark"><AlmaMark /></span>
+          <span className="rail__text">Ask [System]</span>
+        </button>
         <button className="rail__icon-btn" title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={onToggleCollapsed}>
           {Icon.Sidebar()}
         </button>
