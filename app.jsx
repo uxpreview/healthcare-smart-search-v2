@@ -71,9 +71,19 @@ const HISTORY = [
 { id: 'h5', q: 'Physical therapy coverage',            query: 'Does my plan cover physical therapy?' }];
 
 
+const RESPONSE_MODES = [
+  { id: 'Quick',    desc: 'Concise answer with the most relevant next step' },
+  { id: 'Guided',  desc: 'Step-by-step help for choosing care, preparing for a visit, checking symptoms, or understanding coverage' },
+  { id: 'Detailed', desc: 'Broader answer with more context, related results, and more complete coverage' },
+];
+
 /* === Input bar === */
 function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, onFocus, onBlur }) {
   const ta = useR(null);
+  const [mode, setMode] = useS('Quick');
+  const [modeOpen, setModeOpen] = useS(false);
+  const modeRef = useR(null);
+
   useE(() => {
     if (ta.current) {
       ta.current.style.height = 'auto';
@@ -81,6 +91,14 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
     }
   }, [value]);
   useE(() => {if (autoFocus && ta.current) ta.current.focus();}, [autoFocus]);
+  useE(() => {
+    if (!modeOpen) return;
+    const close = (e) => {
+      if (modeRef.current && !modeRef.current.contains(e.target)) setModeOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [modeOpen]);
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -100,7 +118,7 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
         onFocus={onFocus}
         onBlur={onBlur}
         rows={1} />
-      
+
       <div className="input__row">
         <div className="input__tools">
           <button className="icon-btn" title="Add">{Icon.Plus()}</button>
@@ -108,10 +126,26 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
           <button className="icon-btn" title="Voice">{Icon.Mic()}</button>
         </div>
         <div className="input__right">
-          <button className="input__mode" title="Mode">
-            <span>Fast</span>
-            <span className="input__mode-caret">{Icon.ChevronDown()}</span>
-          </button>
+          <div className="input__mode-wrap" ref={modeRef}>
+            <button className={'input__mode' + (modeOpen ? ' input__mode--open' : '')} onClick={() => setModeOpen(o => !o)}>
+              <span>{mode}</span>
+              <span className="input__mode-caret">{Icon.ChevronDown()}</span>
+            </button>
+            {modeOpen && (
+              <div className="input__mode-menu">
+                {RESPONSE_MODES.map(m => (
+                  <button
+                    key={m.id}
+                    className={'input__mode-item' + (mode === m.id ? ' input__mode-item--active' : '')}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => { setMode(m.id); setModeOpen(false); }}>
+                    <span className="input__mode-item-label">{m.id}</span>
+                    <span className="input__mode-item-desc">{m.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             className="input__send"
             disabled={!value.trim()}

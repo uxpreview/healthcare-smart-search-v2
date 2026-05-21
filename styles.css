@@ -2034,6 +2034,7 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   align-items: center;
   gap: 6px;
 }
+.input__mode-wrap { position: relative; }
 .input__mode {
   display: inline-flex;
   align-items: center;
@@ -2045,10 +2046,50 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   font-size: 13px;
   color: var(--text-muted);
   font-weight: 400;
+  cursor: pointer;
 }
-.input__mode:hover { background: var(--bg-alt); color: var(--text); }
+.input__mode:hover,
+.input__mode--open { background: var(--bg-alt); color: var(--text); }
 .input__mode-caret { display: grid; place-items: center; }
 .input__mode-caret svg { width: 14px; height: 14px; }
+.input__mode-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+  min-width: 220px;
+  z-index: 30;
+  overflow: hidden;
+  padding: 4px;
+}
+.input__mode-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  border-radius: 7px;
+  text-align: left;
+  cursor: pointer;
+  gap: 2px;
+}
+.input__mode-item:hover { background: var(--bg-alt); }
+.input__mode-item-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.input__mode-item--active .input__mode-item-label { color: var(--accent); }
+.input__mode-item-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
 
 .input__send {
   width: 30px; height: 30px;
