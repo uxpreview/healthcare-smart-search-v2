@@ -5,23 +5,28 @@ const { useState: useS, useEffect: useE, useRef: useR, useCallback } = React;
 
 /* Quick-action chips below the input */
 const QUICK_CHIPS = [
-{ icon: 'BookOpen', text: 'Appointment Navigator', query: 'Find a primary care doctor near me' },
-{ icon: 'FileText', text: 'Symptom Checker', query: 'What causes lower back pain?' },
-{ icon: 'ShieldCheck', text: 'Health Evaluation', query: 'Does my plan cover physical therapy?' },
-{ icon: 'StethY', text: 'Physician Finder', query: 'Find a primary care doctor near me' }];
-
+  { text: 'Primary care near me',                query: 'Primary care options near me' },
+  { text: 'Cancer care second opinion',           query: 'Cancer care second opinion' },
+  { text: 'Orthopedic care for knee pain',        query: 'Orthopedic care for knee pain' },
+  { text: 'Urgent care open now',                 query: 'Urgent care open right now' },
+  { text: 'Does my plan cover physical therapy?', query: 'Physical therapy coverage' },
+  { text: 'Prepare for a colonoscopy',            query: 'Colonoscopy prep timeline' },
+];
 
 /* Recommended searches shown when input is focused and empty */
 const RECOMMENDATIONS = [
-  'Urgent care open right now',
   'Primary care options near me',
-  'Chest pain and shortness of breath',
-  'Colonoscopy prep timeline',
+  'Cancer care second opinion',
+  'Orthopedic care for knee pain',
+  'Urgent care open right now',
   'Physical therapy coverage',
+  'Colonoscopy prep timeline',
 ];
 
 /* Predictive suggestions keyed by typed prefix */
 const SUGGESTIONS_MAP = {
+  cancer:   ['Cancer care second opinion', 'Find an oncologist', 'Breast cancer care', 'Cancer treatment options'],
+  ortho:    ['Orthopedic care for knee pain', 'Find an orthopedic specialist', 'Sports medicine near me', 'Joint replacement options'],
   chest:    ['Chest pain and shortness of breath', 'Chest pain symptoms', 'Heart attack warning signs', 'Emergency departments near me'],
   colo:     ['Colonoscopy prep timeline', 'Colonoscopy preparation instructions', 'Endoscopy locations', 'Can I have coffee before a colonoscopy?'],
   physical: ['Physical therapy coverage', 'Physical therapy locations near me', 'Find in-network PT providers', 'Do I need a referral for physical therapy?'],
@@ -39,6 +44,8 @@ function getSuggestions(text) {
   // "pt" is a two-char special case; all others require 3+ chars
   if (t === 'pt' || t.startsWith('pt ')) return SUGGESTIONS_MAP.physical;
   if (t.length < 3) return null;
+  if (t.startsWith('can')) return SUGGESTIONS_MAP.cancer;
+  if (t.startsWith('ort')) return SUGGESTIONS_MAP.ortho;
   if (t.startsWith('che')) return SUGGESTIONS_MAP.chest;
   if (t.startsWith('col')) return SUGGESTIONS_MAP.colo;
   if (t.startsWith('phy')) return SUGGESTIONS_MAP.physical;
@@ -86,7 +93,7 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
       <textarea
         ref={ta}
         className="input__textarea"
-        placeholder={placeholder || 'Ask about a symptom, doctor, or visit type…'}
+        placeholder={placeholder || 'Search doctors, locations, services, symptoms, or questions…'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKey}
@@ -205,7 +212,7 @@ function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
           onSubmit={onAsk}
           large
           autoFocus
-          placeholder="Ask about a symptom, doctor, or visit type…" />
+          placeholder="Search doctors, locations, services, symptoms, or questions…" />
         {showPanel && (
           <SearchPanel
             draft={draft}
@@ -215,10 +222,9 @@ function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
       </div>
       {!showPanel && (
         <div className="quick-chips">
-          {QUICK_CHIPS.filter((c) => loggedIn || c.text !== 'Appointment Navigator').map((c, i) =>
-          <button key={i} className="quick-chip" onClick={() => onAsk(c.query)}>
-              <span className="quick-chip__icon">{Icon[c.icon]()}</span>
-              <span>{c.text}</span>
+          {QUICK_CHIPS.map((c, i) =>
+            <button key={i} className="quick-chip" onClick={() => onAsk(c.query)}>
+              {c.text}
             </button>
           )}
         </div>
