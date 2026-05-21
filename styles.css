@@ -351,6 +351,15 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   position: relative;
   justify-self: end;
 }
+.landing-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 16px 0;
+  flex-shrink: 0;
+}
+.role-wrap { position: relative; }
+
 .role-select {
   display: inline-flex;
   align-items: center;

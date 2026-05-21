@@ -671,31 +671,61 @@ function MainHeader({ mode, onModeChange }) {
 
 }
 
-/* === Chat header (sticky) — name + faceted tabs + role dropdown === */
+/* === Role selector (shared between landing header and chat header) === */
 const ROLE_OPTIONS = [
 { id: 'patient', label: "I'm a Patient" },
 { id: 'caregiver', label: "I'm a Caregiver" },
 { id: 'physician', label: "I'm a Physician" },
 { id: 'researcher', label: "I'm a Researcher" }];
 
+function RoleSelect({ role, onRoleChange }) {
+  const [open, setOpen] = useS(false);
+  const ref = useR(null);
+  useE(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+  const label = ROLE_OPTIONS.find(r => r.id === role)?.label || "I'm a Patient";
+  return (
+    <div className="role-wrap" ref={ref}>
+      <button className={'role-select' + (open ? ' role-select--open' : '')} onClick={() => setOpen(o => !o)}>
+        <span>{label}</span>
+        <span className="role-select__caret">{Icon.ChevronDown()}</span>
+      </button>
+      {open && (
+        <div className="role-menu">
+          <div className="role-menu__header">View results for</div>
+          {ROLE_OPTIONS.map(r => (
+            <button
+              key={r.id}
+              className={'role-menu__item' + (role === r.id ? ' role-menu__item--active' : '')}
+              onClick={() => { onRoleChange(r.id); setOpen(false); }}>
+              <span>{r.label}</span>
+              {role === r.id && <span className="role-menu__check">{Icon.Check()}</span>}
+            </button>
+          ))}
+          <div className="role-menu__footer">Personalizes language, sources, and detail level.</div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-function ChatHeader({ chatLabel, tabs, activeTab, onTabChange, docked }) {
-  const [roleOpen, setRoleOpen] = React.useState(false);
-  const [role, setRole] = React.useState('patient');
+/* === Chat header (sticky) — name + faceted tabs + role dropdown === */
+function ChatHeader({ chatLabel, tabs, activeTab, onTabChange, docked, role, onRoleChange }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const roleRef = React.useRef(null);
   const menuRef = React.useRef(null);
 
   React.useEffect(() => {
     const handler = (e) => {
-      if (roleRef.current && !roleRef.current.contains(e.target)) setRoleOpen(false);
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const roleLabel = ROLE_OPTIONS.find((r) => r.id === role)?.label || "I'm a Patient";
   const showDocked = docked && tabs && tabs.length > 1;
 
   return (
@@ -739,28 +769,8 @@ function ChatHeader({ chatLabel, tabs, activeTab, onTabChange, docked }) {
         })}
       </div>
 
-      <div className="chat-header__right" ref={roleRef}>
-        <button
-          className={'role-select' + (roleOpen ? ' role-select--open' : '')}
-          onClick={() => setRoleOpen((o) => !o)}>
-          <span>{roleLabel}</span>
-          <span className="role-select__caret">{Icon.ChevronDown()}</span>
-        </button>
-        {roleOpen &&
-        <div className="role-menu">
-            <div className="role-menu__header">View results for</div>
-            {ROLE_OPTIONS.map((r) =>
-          <button
-            key={r.id}
-            className={'role-menu__item' + (role === r.id ? ' role-menu__item--active' : '')}
-            onClick={() => {setRole(r.id);setRoleOpen(false);}}>
-                <span>{r.label}</span>
-                {role === r.id && <span className="role-menu__check">{Icon.Check()}</span>}
-              </button>
-          )}
-            <div className="role-menu__footer">Personalizes language, sources, and detail level.</div>
-          </div>
-        }
+      <div className="chat-header__right">
+        <RoleSelect role={role} onRoleChange={onRoleChange} />
       </div>
     </div>);
 
@@ -857,6 +867,7 @@ function App() {
   const [tweaks, setTweak] = window.useTweaks ? window.useTweaks(TWEAK_DEFAULTS) : [TWEAK_DEFAULTS, () => {}];
   const [messages, setMessages] = useS([]);
   const [draft, setDraft] = useS('');
+  const [role, setRole] = useS('patient');
   const [collapsed, setCollapsed] = useS(false);
   const [agent, setAgent] = useS(null); // null | 'check-symptoms' | 'preferences' | 'settings'
   const [loggedIn, setLoggedIn] = useS(tweaks.loggedIn !== false);
@@ -1047,9 +1058,14 @@ function App() {
           tabs={messages[0]?.data?.tabs}
           activeTab={activeTab || (messages[0]?.data?.tabs && messages[0].data.tabs[0]?.id)}
           onTabChange={setActiveTab}
-          docked={tabsDocked} /> :
+          docked={tabsDocked}
+          role={role}
+          onRoleChange={setRole} /> :
 
-        agent ? <MainHeader mode={agent} /> : null
+        agent ? <MainHeader mode={agent} /> :
+        <div className="landing-header">
+          <RoleSelect role={role} onRoleChange={setRole} />
+        </div>
         }
         <div className="main__scroll" ref={attachScroll}>
           {!hasMessages && agent === 'check-symptoms' &&
