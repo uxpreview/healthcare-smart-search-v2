@@ -83,6 +83,8 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
   const [mode, setMode] = useS('Quick');
   const [modeOpen, setModeOpen] = useS(false);
   const modeRef = useR(null);
+  // Suppress the onFocus callback when focus is set programmatically (autoFocus)
+  const suppressNextFocus = useR(false);
 
   useE(() => {
     if (ta.current) {
@@ -90,7 +92,12 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
       ta.current.style.height = Math.min(ta.current.scrollHeight, 180) + 'px';
     }
   }, [value]);
-  useE(() => {if (autoFocus && ta.current) ta.current.focus();}, [autoFocus]);
+  useE(() => {
+    if (autoFocus && ta.current) {
+      suppressNextFocus.current = true;
+      ta.current.focus();
+    }
+  }, [autoFocus]);
   useE(() => {
     if (!modeOpen) return;
     const close = (e) => {
@@ -106,6 +113,10 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
       if (value.trim()) onSubmit(value.trim());
     }
   };
+  const handleTextareaFocus = () => {
+    if (suppressNextFocus.current) { suppressNextFocus.current = false; return; }
+    if (onFocus) onFocus();
+  };
   return (
     <div className={'input-shell' + (large ? ' input-shell--large' : '')}>
       <textarea
@@ -115,7 +126,7 @@ function InputBar({ value, onChange, onSubmit, large, placeholder, autoFocus, on
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKey}
-        onFocus={onFocus}
+        onFocus={handleTextareaFocus}
         onBlur={onBlur}
         rows={1} />
 
@@ -239,13 +250,14 @@ function Landing({ onAsk, draft, setDraft, loggedIn, onSignIn }) {
         </button>
       }
       <h1 className="landing__title">How can we help you feel better?</h1>
-      <div className="landing__input" ref={wrapRef} onClick={handleOpen} onBlur={handleBlur}>
+      <div className="landing__input" ref={wrapRef} onBlur={handleBlur}>
         <InputBar
           value={draft}
           onChange={setDraft}
           onSubmit={onAsk}
           large
           autoFocus
+          onFocus={handleOpen}
           placeholder="Search doctors, locations, services, symptoms, or questions…" />
         {showPanel && (
           <SearchPanel
