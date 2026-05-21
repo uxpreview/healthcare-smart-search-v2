@@ -443,7 +443,7 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
 .rail__toggle {
   display: flex;
   align-items: center;
-  padding: 0 2px 6px;
+  padding: 0 4px 6px 4px;
   flex-shrink: 0;
 }
 .rail__brand {
@@ -455,7 +455,7 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   gap: 9px;
   border: 0;
   background: transparent;
-  padding: 6px 4px;
+  padding: 6px 7px;
   border-radius: 8px;
   color: var(--text);
   cursor: pointer;
@@ -502,12 +502,11 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
 .rail--collapsed .rail__section-head { display: none; }
 .rail--collapsed .signin-callout { display: none; }
 .rail--collapsed .rail__item-trail { display: none; }
-.rail--collapsed .rail__divider { display: none; }
 .rail--collapsed .rail__user-text,
 .rail--collapsed .rail__user-action { display: none; }
-.rail--collapsed .rail__item { justify-content: center; padding: 7px; }
-.rail--collapsed .rail__brand { justify-content: center; padding: 6px; }
-.rail--collapsed .rail__user { justify-content: center; }
+/* Header-only divider — hidden in expanded, shown in collapsed */
+.rail__divider--header { display: none; }
+.rail--collapsed .rail__divider--header { display: block; }
 .rail__item--login { display: none; }
 .rail--collapsed .rail__item--login { display: flex; }
 .rail--collapsed .user-menu { left: 4px; right: auto; min-width: 200px; }
@@ -528,7 +527,7 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 7px 10px;
+  padding: 7px 9px;
   border: 0;
   background: transparent;
   border-radius: 7px;
@@ -667,7 +666,7 @@ svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fl
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 6px;
+  padding: 8px 6px 8px 3px;
   margin-top: 8px;
   border-radius: 8px;
   cursor: pointer;

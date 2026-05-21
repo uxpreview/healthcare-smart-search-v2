@@ -274,7 +274,7 @@ function RailLockedItem({ icon, label, title, desc, onSignIn }) {
          onBlur={hide}>
       <div className={'rail__item rail__item--locked' + (hover ? ' rail__item--locked-hover' : '')} aria-disabled="true" tabIndex={0}>
         <span className="rail__item-icon">{Icon[icon]()}</span>
-        <span>{label}</span>
+        <span className="rail__text">{label}</span>
         <span className="rail__item-trail rail__item-trail--lock">{Icon.Lock()}</span>
       </div>
       {hover && (
@@ -313,6 +313,9 @@ function LeftRail({ history, onNewConv, onPickHistory, collapsed, onToggleCollap
           {Icon.Sidebar()}
         </button>
       </div>
+
+      {/* Divider below toggle — visible only when collapsed */}
+      <div className="rail__divider rail__divider--header"></div>
 
       {/* Nav section — New chat, Saved, Projects */}
       <div className="rail__section">
